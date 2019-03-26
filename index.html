@@ -6,10 +6,10 @@
     
     <head>
         <title>Uniteam</title>
-        
-        <script src="https://apis.google.com/js/platform.js" async defer></script>
-        <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase.js"></script>
     </head>
+    
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase.js"></script>
     
     <script>
       // Initialize Firebase
@@ -41,7 +41,7 @@
                 mydiv = document.getElementById("mydata");
                 mydiv.innerHTML = name
                 myphotodiv = document.getElementById("myphoto");
-                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style="'border-radius: 50%; height: 100%'"/>";
+                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='height: 100%; border-radius: 50%'/>";
 
                 firebase.database().ref('/').once('value').then(function(snapshot) {
                     var data = (snapshot.val());
@@ -116,6 +116,7 @@
             
         }
         
+        
         function signin() {
             console.log("Signing in");
             var provider = new firebase.auth.GoogleAuthProvider();
@@ -148,6 +149,7 @@
             background-color: teal;
             color: white;
             font-size: 12px;
+            font-weight: bold;
         }
     
     </style>
