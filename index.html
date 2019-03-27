@@ -41,7 +41,7 @@
                 mydiv = document.getElementById("mydata");
                 mydiv.innerHTML = name
                 myphotodiv = document.getElementById("myphoto");
-                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='height: 100%; border-radius: 50%'/>";
+                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; height: 100%'/>";
 
                 firebase.database().ref('/').once('value').then(function(snapshot) {
                     var data = (snapshot.val());
@@ -138,39 +138,53 @@
             text-align: center;
             color: white;
             background-color: darkcyan;
-            padding: 5px;
+            padding: 7px;
             margin: 0;
         }
         
         button {
             cursor: pointer;
             padding: 5px;
-            margin-top: 5px;
             background-color: teal;
             color: white;
             font-size: 12px;
             font-weight: bold;
         }
+        
+        .round {
+            border-radius: 50px; 
+            padding: 7px;
+        }
+        
+        #post {
+            text-align: left;
+            float: left;
+            font-family: "Times New Roman", "Arial", sans-serif;
+        }
     
     </style>
     
-    <body>
+    <body style="margin: 0">
         <h1>
             Uniteam
         
-            <button onclick="signin()" style="float: right">Sign in</button>
-            <button onclick="signout()" style="float: left">Sign out</button>
+            <button onclick="signin()" style="margin-top: 5px; float: right">Sign in</button>
+            <button onclick="signout()" style="margin-top: 5px; float: left">Sign out</button>
             
-            <div id="myphoto" style="float: right"></div>
+            <div id="myphoto" style="float: right; height: 36px; margin-right: 5px"></div>
         </h1>
         
-        <form>
-            Post:<br>
-            <textarea id="twit" type="text" name="thetweet" cols="80" rows="4"></textarea>
-        </form> 
-        <button type="button" onclick="tweet()" style="border-radius: 50px; padding: 7px">Submit</button>
-    
-    <div id="myphoto"></div>
+        <div style="width: 70%; text-align: center; margin: auto; margin-top: 5px">
+            <div id="post">
+                <form>
+                    Post:<br>
+                    <textarea id="twit" type="text" name="thetweet" cols="60" rows="4"></textarea>
+                </form> 
+                <button type="button" onclick="tweet()" class="round">Submit</button>
+            </div>
+
+            <div id="mytweets">Lorem Ipsum</div>
+        </div>
     </body>
 
 </html>
