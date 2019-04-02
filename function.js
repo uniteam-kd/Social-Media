@@ -1,21 +1,3 @@
-<!DOCTYPE html>
-<html>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta charset="utf-8"/>
-    
-    <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <!--<link rel="stylesheet" href="styling.css">-->
-        
-        <title>Uniteam</title>
-    </head>
-    
-    <!--<script src="function.js"></script>-->
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase.js"></script>
-    
-    <script>
       // Initialize Firebase
       var config = {
         apiKey: "AIzaSyBxfYq5noAbWU4gA7OJXbSfZNr-ftiOKSQ",
@@ -45,7 +27,7 @@
                 mydiv = document.getElementById("mydata");
                 mydiv.innerHTML = name
                 myphotodiv = document.getElementById("myphoto");
-                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; height: 100%; cursor: pointer; display: block'/>";
+                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; height: 100%; cursor: pointer'/>";
 
                 firebase.database().ref('/').once('value').then(function(snapshot) {
                     var data = (snapshot.val());
@@ -132,113 +114,3 @@
             firebase.auth().signOut().then(function() {
             });
         }
-    
-    </script>
-    
-    <style>
-    
-        h1 {
-            text-align: center;
-            color: white;
-            background-color: darkcyan;
-            padding: 7px;
-            margin: 0;
-        }
-        
-        button {
-            cursor: pointer;
-            padding: 5px;
-            background-color: teal;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            margin-top: 5px; 
-        }
-        
-        .round {
-            border-radius: 50px; 
-            padding: 7px;
-        }
-        
-        #post {
-            text-align: left;
-            float: left;
-            font-family: "Times New Roman", "Arial", sans-serif;
-        }
-        
-        textarea {
-            width: 100%;
-            height: 10vh;
-            min-height: 60px;
-        }
-        
-        .column {
-            float: left;
-            width: 50%;
-        }
-
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-        
-        .drop-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 100px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            right: 0;
-        }
-
-        .drop-content a {
-            font-size: 16px;
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
-
-        .drop-content a:hover {background-color: #f1f1f1}
-
-        .dropdown:hover .drop-content {
-            display: block;
-        }
-    
-    </style>
-    
-    <body style="margin: 0">
-        <h1>
-            Uniteam
-        
-            <button onclick="signin()" style="float: left">Sign in</button>
-            <button style="float: left; "><i class="fa fa-home"></i></button>
-            
-            <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
-                <div id="myphoto" style="height: 100%"></div>
-                <div class="drop-content">
-                    <a><div id="mydata"></div></a>
-                    <a href="">Profile</a>
-                    <a><button onclick="signout()">Sign out</button></a>
-                </div>
-            </div>
-        </h1>
-        
-        <div style="width: 70%; text-align: center; margin: auto; margin-top: 5px" class="row">
-            <div id="post" class="column">
-                <form>
-                    Post:<br>
-                    <textarea id="twit" type="text" name="thetweet" cols="60" rows="4"></textarea>
-                </form> 
-                <button type="button" onclick="tweet()" class="round">Submit</button>
-            </div>
-
-            <div id="mytweets" class="column">Lorem Ipsum</div>
-            <div id="myphoto" style="display: none"></div>
-
-        </div>
-    </body>
-
-</html>
