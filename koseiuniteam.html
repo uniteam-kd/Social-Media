@@ -42,6 +42,13 @@
                 // write data to document
                 mydiv = document.getElementById("mydata");
                 mydiv.innerHTML = name
+                mydiv = document.getElementById("myname");
+                mydiv.innerHTML = name
+                mydiv = document.getElementById("myemail");
+                mydiv.innerHTML = email
+                mydiv = document.getElementById("myuserid");
+                mydiv.innerHTML = userId
+                
                 myphotodiv = document.getElementById("myphoto");
                 myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; width: 42px; cursor: pointer'/>";
                 firebase.database().ref('/tweets').once('value').then(function(snapshot) {
@@ -401,11 +408,14 @@ window.onclick = function(event) {
   <div class="modal-content">
   <div class="modal-header">
     <span class="close">&times;</span>
-    <h2><div id="mydata">{{name}}</div></h2>
+      <a><div id="myname"><h2></h2></div></a>
   </div>
   <div class="modal-body">
-    <p>Some text in the Modal Body</p>
-    <p>Some other text...</p>
+    <p>Email: </p>
+    <div id="myemail"><p>Some text in the Modal Body</p></div>
+      <br>
+      <p>UserID: </p>
+      <div id="myuserid"></div>
   </div>
   <div class="modal-footer">
     <h3>Modal Footer</h3>
