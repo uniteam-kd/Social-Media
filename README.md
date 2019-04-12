@@ -1,2 +1,0 @@
-# Uniteam
-Social media project
