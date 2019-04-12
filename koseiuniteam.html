@@ -186,13 +186,10 @@
         window.onload = function() {
         
 var modal = document.getElementById('myModal');
-
 // Get the button that opens the modal
 var btn = document.getElementById("myBtn");
-
 // Get the <span> element that closes the modal
 var span = document.getElementsByClassName("close")[0];
-
 // When the user clicks on the button, open the modal 
 btn.onclick = function() {
   modal.style.display = "block";
@@ -201,7 +198,6 @@ btn.onclick = function() {
 span.onclick = function() {
   modal.style.display = "none";
 }
-
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
   if (event.target == modal) {
@@ -306,7 +302,6 @@ window.onclick = function(event) {
             background-color: rgb(0,0,0); /* Fallback color */
             background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
-
 /* Modal Content/Box */
         .modal-content {
             background-color: #fefefe;
@@ -315,7 +310,6 @@ window.onclick = function(event) {
             border: 1px solid #888;
             width: 80%; /* Could be more or less, depending on screen size */
 }
-
 /* The Close Button */
         .close {
             color: #aaa;
@@ -323,7 +317,6 @@ window.onclick = function(event) {
             font-size: 28px;
             font-weight: bold;
 }
-
         .close:hover,
         .close:focus {
             color: black;
@@ -337,17 +330,14 @@ window.onclick = function(event) {
   background-color: #5cb85c;
   color: white;
 }
-
 /* Modal Body */
 .modal-body {padding: 2px 16px;}
-
 /* Modal Footer */
 .modal-footer {
   padding: 2px 16px;
   background-color: #5cb85c;
   color: white;
 }
-
 /* Modal Content */
 .modal-content {
   position: relative;
@@ -360,7 +350,6 @@ window.onclick = function(event) {
   animation-name: animatetop;
   animation-duration: 0.4s
 }
-
 /* Add Animation */
 @keyframes animatetop {
   from {top: -300px; opacity: 0}
@@ -372,7 +361,7 @@ window.onclick = function(event) {
 
     <body style="margin: 0">
         <h1 style="font-size: 36px">
-            Uniteam
+            <img src="title.jpg">
         
             <button onclick="signin()" style="float: left">Sign in</button>
             <button style="float: left" src="index.html"><i class="fa fa-home"></i></button>
@@ -412,7 +401,7 @@ window.onclick = function(event) {
   </div>
   <div class="modal-body">
     <p>Email: </p>
-    <div id="myemail"><p>Some text in the Modal Body</p></div>
+    <div id="myemail"></div>
       <br>
       <p>UserID: </p>
       <div id="myuserid"></div>
