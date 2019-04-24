@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -5,28 +6,26 @@
     
     <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-        <!--<link rel="stylesheet" href="styling.css">-->
         
         <title>Uniteam</title>
     </head>
 
     <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="http://code.jquery.com/jquery-1.5.js"></script>
 
     <script>
         // Initialize Firebase
-  var config = {
-    apiKey: "AIzaSyCiNnT8E5j2clvB8zZrkz89axC32RtV24A",
-    authDomain: "uniteam-7558a.firebaseapp.com",
-    databaseURL: "https://uniteam-7558a.firebaseio.com",
-    projectId: "uniteam-7558a",
-    storageBucket: "uniteam-7558a.appspot.com",
-    messagingSenderId: "795089365122"
-  };
-  firebase.initializeApp(config);
+        var config = {
+            apiKey: "AIzaSyCiNnT8E5j2clvB8zZrkz89axC32RtV24A",
+            authDomain: "uniteam-7558a.firebaseapp.com",
+            databaseURL: "https://uniteam-7558a.firebaseio.com",
+            projectId: "uniteam-7558a",
+            storageBucket: "uniteam-7558a.appspot.com",
+            messagingSenderId: "795089365122"
+        };
+        firebase.initializeApp(config);
            
-        
         // Check to see if you are logged in
         firebase.auth().onAuthStateChanged(function(user) {
             if (user == null) {
@@ -113,17 +112,16 @@
                     var date = new Date(data[u][t].time);
                     var time = date.toString();
                     if (data[u][t].img != "") {
-                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "' width='50px' style='border-radius: 50%'></td>";
+                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
                         mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
-                        mytab = mytab + "<td>" + time + "<br><img src='" + data[u][t].img + "' width='300px'></td>";
+                        mytab = mytab + "<td>" + time + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
                     } else {
-                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "' width='50px' style='border-radius: 50%; cursor: pointer'></td>";
+                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%; cursor: pointer'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
                         mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
                         mytab = mytab + "<td>" + time + "</td>";
-                        
-                        
+                        mytab = mytab + "<td><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>"; 
                     } 
                     mytab = mytab + "</tr>";
                 }   
@@ -162,9 +160,7 @@
                       });
                     }
                 });
-            
-            
-            
+             
             // The unique key stored in tweetid is based on a timestamp, so list items will automatically be ordered chronologically. Because Firebase generates a unique key for each tweet, no write conflicts will occur if multiple users add a post at the same time. https://firebase.google.com/docs/database/admin/save-data
             
         }
@@ -191,26 +187,39 @@
         // Get the modal
         window.onload = function() {
         
-var modal = document.getElementById('myModal');
-// Get the button that opens the modal
-var btn = document.getElementById("myBtn");
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
-// When the user clicks on the button, open the modal 
-btn.onclick = function() {
-  modal.style.display = "block";
-}
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-  modal.style.display = "none";
-}
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-}
-}
+        var modal = document.getElementById('myModal');
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+          modal.style.display = "block";
+        }
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+        }
+        
+        function like(x) {
+            x.classList.toggle("blue");
+        }
+        
+        function countChar(val) {
+            var len = val.value.length;
+            if (len >= 200) {
+                val.value = val.value.substring(0, 200);
+            } else {
+                $("#charNum").text(200 - len);
+            }
+        };
         
     </script>
     
@@ -224,7 +233,8 @@ window.onclick = function(event) {
             text-align: center;
             color: white;
             background-color: darkcyan;
-            padding: 5px;
+            padding: 6px;
+            padding-bottom: 0;
             margin: 0;
         }
         
@@ -249,6 +259,11 @@ window.onclick = function(event) {
             font-family: "Times New Roman", "Arial", sans-serif;
         }
         
+        #mytweets {
+            overflow-y: scroll;
+            height: 80vh;
+        }
+        
         ul li {
             display: block;
             margin: 3px;
@@ -260,14 +275,24 @@ window.onclick = function(event) {
         
         textarea {
             min-width: 400px;
+            max-width: 95%;
             min-height: 80px;
             font-size: 12px;
+            resize: none;
         }
         
         .column {
             float: left;
             width: 50%;
         }
+
+        .row {
+            width: 80%; 
+            text-align: center; 
+            margin: auto; 
+            margin-top: 5px;
+        }
+        
         .row:after {
             content: "";
             display: table;
@@ -283,6 +308,7 @@ window.onclick = function(event) {
             z-index: 1;
             right: 0;
         }
+
         .drop-content a {
             font-size: 16px;
             color: black;
@@ -290,12 +316,17 @@ window.onclick = function(event) {
             text-decoration: none;
             display: block;
         }
+
         .drop-content a:hover {background-color: #f1f1f1}
+
         .dropdown:hover .drop-content {
             display: block;
         }
         
-        /*modal css*/
+        .blue {
+            color: cadetblue;
+        }
+        
         .modal {
             display: none; /* Hidden by default */
             position: fixed; /* Stay in place */
@@ -308,69 +339,107 @@ window.onclick = function(event) {
             background-color: rgb(0,0,0); /* Fallback color */
             background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
-/* Modal Content/Box */
+
         .modal-content {
             background-color: #fefefe;
             margin: 15% auto; /* 15% from the top and centered */
-            padding: 20;
+            padding: 20px;
             border: 1px solid #888;
             width: 80%; /* Could be more or less, depending on screen size */
 }
-/* The Close Button */
+
         .close {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
-}
+        }
         .close:hover,
         .close:focus {
             color: black;
             text-decoration: none;
             cursor: pointer;
-}
+        }
+
+        #loader {
+              position: absolute;
+              top: 25%;
+              left: 72%;
+              z-index: 1;
+              width: 80px;
+              height: 80px;
+              margin: -75px 0 0 -75px;
+              border: 12px solid #f3f3f3;
+              border-radius: 50%;
+              border-top: 12px solid darkcyan;
+              width: 80px;
+              height: 80px;
+              -webkit-animation: spin 2s linear infinite;
+              animation: spin 2s linear infinite;
+        }
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
         
-        /* Modal Header */
-.modal-header {
-  padding: 2px 16px;
-  background-color: teal;
-  color: white;
-}
-/* Modal Body */
-.modal-body {padding: 2px 16px;}
-/* Modal Footer */
-.modal-footer {
-  padding: 2px 16px;
-  background-color: #5cb85c;
-  color: white;
-}
-/* Modal Content */
-.modal-content {
-  position: relative;
-  background-color: #fefefe;
-  margin: auto;
-  padding: 0;
-  border: 1px solid #888;
-  width: 80%;
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-  animation-name: animatetop;
-  animation-duration: 0.4s
-}
-/* Add Animation */
-@keyframes animatetop {
-  from {top: -300px; opacity: 0}
-  to {top: 0; opacity: 1}
-}
+        .modal-header {
+          padding: 2px 16px;
+          background-color: darkcyan;
+          color: white;
+        }
+        /* Modal Body */
+        .modal-body {padding: 2px 16px;}
+        /* Modal Footer */
+        .modal-footer {
+          padding: 2px 16px;
+          background-color: darkcyan;
+          color: white;
+        }
+        /* Modal Content */
+        .modal-content {
+          position: relative;
+          background-color: #fefefe;
+          margin: auto;
+          padding: 0;
+          border: 1px solid #888;
+          width: 80%;
+          box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+          animation-name: animatetop;
+          animation-duration: 0.4s
+        }
+        /* Add Animation */
+        @keyframes animatetop {
+          from {top: -300px; opacity: 0}
+          to {top: 0; opacity: 1}
+        }
         
-    
+        @media (max-width: 1100px) {
+            .row {
+                width: 100%;
+                padding: 8px;
+                padding-top: 0;
+            }
+            .column {
+                float: none;
+                width: 100%;
+            }
+            #loader {
+                top: 50%;
+                left: 54%;
+            }
+        }
+        
     </style>
 
-    <body style="margin: 0">
+    <body style="margin: 0; overflow: hidden">
         <h1 style="font-size: 36px">
-            <a href="https://github.com/uniteam-kd/Social-Media/wiki"target="_blank"><img src="title.jpg"></a>
-            
+            <img src="title.jpg">
+        
             <button onclick="signin()" style="float: left">Sign in</button>
-            <button onclick ="reload()"style="float: left" src="index.html"><i class="fa fa-home"></i></button>
             
             <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
                 <div id="myphoto" class="dropbtn" onclick="drop()" style="height: 100%"></div>
@@ -382,37 +451,41 @@ window.onclick = function(event) {
             </div>
         </h1>
     
-        <div style="width: 80%; text-align: center; margin: auto; margin-top: 5px" class="row">
+        <div class="row">
             <div id="post" class="column">
                 <form>
-                    Post:<br>
-                    <textarea id="twit" type="text" name="thetweet" cols="40" rows="4" placeholder="Write your post here..."></textarea>
+                    <label for="twit">Post:</label><br>
+                    <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
+                    <div id="charNum" style="float: right; margin-right: 20px">200</div>
                 </form> 
-                <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL();" />
+                <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL();"/>
                 <br>
                 <button type="button" onclick="tweet()" class="round">Submit</button>
                 <div id="imgTest" style="display:none"></div>
             </div>
 
-        <div id="mytweets" class="column">Loading...</div>
+        <div id="mytweets" class="column">Loading...<div id="loader"></div></div>
         </div>
         
         <div id="myModal" class="modal">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <span class="close">&times;</span>
+                      <a><h2><div id="myname"></div></h2></a>
+                  </div>
+                  <div class="modal-body">
+                      <p>Email: </p>
+                      <div id="myemail"></div>
+                      <br>
+                      <p>UserID: </p>
+                      <div id="myuserid"></div>
+                  </div>
+                  <div class="modal-footer">
+                      <h3>Modal Footer</h3>
+                  </div>
+            </div>
 
-  <!-- Modal content -->
-  <div class="modal-content">
-  <div class="modal-header">
-    <span class="close">&times;</span>
-      <a><h2><div id="myname"></div></h2></a>
-  </div>
-  <div class="modal-body">
-    <p>Email: </p>
-    <div id="myemail"></div>
-      <br>
-      <p>UserID: </p>
-      <div id="myuserid"></div>
-  </div>
-</div>
+        </div>
    
     </body>
 

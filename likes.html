@@ -10,22 +10,23 @@
         <title>Uniteam</title>
     </head>
 
-    <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <script src="http://code.jquery.com/jquery-1.5.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/5.9.4/firebase.js"></script>
+    
     <script>
+        var liked_posts = [];
+        
         // Initialize Firebase
         var config = {
-            apiKey: "AIzaSyCiNnT8E5j2clvB8zZrkz89axC32RtV24A",
-            authDomain: "uniteam-7558a.firebaseapp.com",
-            databaseURL: "https://uniteam-7558a.firebaseio.com",
-            projectId: "uniteam-7558a",
-            storageBucket: "uniteam-7558a.appspot.com",
-            messagingSenderId: "795089365122"
+            apiKey: "AIzaSyBxfYq5noAbWU4gA7OJXbSfZNr-ftiOKSQ",
+            authDomain: "uniteam-fba5c.firebaseapp.com",
+            databaseURL: "https://uniteam-fba5c.firebaseio.com",
+            projectId: "uniteam-fba5c",
+            storageBucket: "uniteam-fba5c.appspot.com",
+            messagingSenderId: "894066322268"
         };
         firebase.initializeApp(config);
-           
+         
         // Check to see if you are logged in
         firebase.auth().onAuthStateChanged(function(user) {
             if (user == null) {
@@ -51,7 +52,7 @@
                 mydiv.innerHTML = userId
                 
                 myphotodiv = document.getElementById("myphoto");
-                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; width: 42px; cursor: pointer'/>";
+                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; width: 44px; cursor: pointer'/>";
                 firebase.database().ref('/tweets').once('value').then(function(snapshot) {
                     var data = (snapshot.val());
                     if (data == null) {
@@ -92,11 +93,12 @@
         } // end function
         
         // write user data
-        function writeUserData(userId, name, email, imageUrl) {
+        function writeUserData(userId, name, email, imageUrl, liked_posts) {
             firebase.database().ref('users/' + userId).set({
                 username: name,
                 email: email,
-                profile_picture : imageUrl
+                profile_picture : imageUrl,
+                twit_liked: liked_posts
             });
         }
         
@@ -112,16 +114,16 @@
                     var date = new Date(data[u][t].time);
                     var time = date.toString();
                     if (data[u][t].img != "") {
-                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%'></td>";
+                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "' width='50px' style='border-radius: 50%'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
                         mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
-                        mytab = mytab + "<td>" + time + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
+                        mytab = mytab + "<td>" + time + "<br><img src='" + data[u][t].img + "' width='300px'></td>";
                     } else {
-                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%; cursor: pointer'></td>";
+                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "' width='50px' style='border-radius: 50%; cursor: pointer'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
                         mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
                         mytab = mytab + "<td>" + time + "</td>";
-                        mytab = mytab + "<td><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>"; 
+                        mytab = mytab + "<td><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i>" + data[u][t].likes + "</td>"; 
                     } 
                     mytab = mytab + "</tr>";
                 }   
@@ -141,7 +143,7 @@
             var nameValue = twitdoc.value;
             var imgValue = twitimg.innerHTML;
             var js_time = Date.now();
-            var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue});
+            var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue, likes: likeValue});
             twitdoc.value = "";
             console.log("tweet written")
             
@@ -160,7 +162,7 @@
                       });
                     }
                 });
-             
+            
             // The unique key stored in tweetid is based on a timestamp, so list items will automatically be ordered chronologically. Because Firebase generates a unique key for each tweet, no write conflicts will occur if multiple users add a post at the same time. https://firebase.google.com/docs/database/admin/save-data
             
         }
@@ -173,53 +175,51 @@
             });
         }
         
-        function reload() {
-            window.location.reload()
-        }
-        
         function signout() {
             console.log("Signing out");
             firebase.auth().signOut().then(function() {
             });
         }
         
-        //modal JavaScript
-        // Get the modal
         window.onload = function() {
-        
-        var modal = document.getElementById('myModal');
-        // Get the button that opens the modal
-        var btn = document.getElementById("myBtn");
-        // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
-        // When the user clicks on the button, open the modal 
-        btn.onclick = function() {
-          modal.style.display = "block";
-        }
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-          modal.style.display = "none";
-        }
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-          if (event.target == modal) {
-            modal.style.display = "none";
-          }
-        }
+
+            var modal = document.getElementById('myModal');
+
+            // Get the button that opens the modal
+            var btn = document.getElementById("myBtn");
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+
+            // When the user clicks on the button, open the modal 
+            btn.onclick = function() {
+              modal.style.display = "block";
+            }
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+              modal.style.display = "none";
+            }
+
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+              if (event.target == modal) {
+                modal.style.display = "none";
+              }
+            }
         }
         
         function like(x) {
-            x.classList.toggle("blue");
-        }
-        
-        function countChar(val) {
-            var len = val.value.length;
-            if (len >= 200) {
-                val.value = val.value.substring(0, 200);
-            } else {
-                $("#charNum").text(200 - len);
+            var twitdoc = document.getElementById("twit");
+            for (i = 0; i < liked_posts.length; i++) {
+                if (liked_posts[i] === twitdoc.value) {
+                    liked_posts.splice(i, 1);
+                    return;
+                } else if (liked_posts[i] != twitdoc.value) {
+                    x.classList.toggle("blue");
+                    liked_posts.push(twitdoc.value);
+                }
             }
-        };
+        }
         
     </script>
     
@@ -259,11 +259,6 @@
             font-family: "Times New Roman", "Arial", sans-serif;
         }
         
-        #mytweets {
-            overflow-y: scroll;
-            height: 80vh;
-        }
-        
         ul li {
             display: block;
             margin: 3px;
@@ -275,10 +270,8 @@
         
         textarea {
             min-width: 400px;
-            max-width: 95%;
             min-height: 80px;
             font-size: 12px;
-            resize: none;
         }
         
         .column {
@@ -290,7 +283,7 @@
             width: 80%; 
             text-align: center; 
             margin: auto; 
-            margin-top: 5px;
+            margin-top: 5px
         }
         
         .row:after {
@@ -361,31 +354,6 @@
             cursor: pointer;
         }
 
-        #loader {
-              position: absolute;
-              top: 25%;
-              left: 72%;
-              z-index: 1;
-              width: 80px;
-              height: 80px;
-              margin: -75px 0 0 -75px;
-              border: 12px solid #f3f3f3;
-              border-radius: 50%;
-              border-top: 12px solid darkcyan;
-              width: 80px;
-              height: 80px;
-              -webkit-animation: spin 2s linear infinite;
-              animation: spin 2s linear infinite;
-        }
-        @-webkit-keyframes spin {
-          0% { -webkit-transform: rotate(0deg); }
-          100% { -webkit-transform: rotate(360deg); }
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
         .modal-header {
           padding: 2px 16px;
           background-color: darkcyan;
@@ -417,29 +385,25 @@
           to {top: 0; opacity: 1}
         }
         
-        @media (max-width: 1100px) {
+        @media (max-width: 1000px) {
             .row {
                 width: 100%;
                 padding: 8px;
-                padding-top: 0;
             }
             .column {
                 float: none;
                 width: 100%;
             }
-            #loader {
-                top: 50%;
-                left: 54%;
-            }
         }
-        
+    
     </style>
 
-    <body style="margin: 0; overflow: hidden">
+    <body style="margin: 0">
         <h1 style="font-size: 36px">
             <img src="title.jpg">
         
             <button onclick="signin()" style="float: left">Sign in</button>
+            <button style="float: left" src="index.html"><i class="fa fa-home"></i></button>
             
             <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
                 <div id="myphoto" class="dropbtn" onclick="drop()" style="height: 100%"></div>
@@ -454,9 +418,8 @@
         <div class="row">
             <div id="post" class="column">
                 <form>
-                    <label for="twit">Post:</label><br>
-                    <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
-                    <div id="charNum" style="float: right; margin-right: 20px">200</div>
+                    Post:<br>
+                    <textarea id="twit" type="text" name="thetweet" cols="40" rows="4" placeholder="Write your post here..."></textarea>
                 </form> 
                 <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL();"/>
                 <br>
@@ -464,7 +427,7 @@
                 <div id="imgTest" style="display:none"></div>
             </div>
 
-        <div id="mytweets" class="column">Loading...<div id="loader"></div></div>
+        <div id="mytweets" class="column">Loading...</div>
         </div>
         
         <div id="myModal" class="modal">
