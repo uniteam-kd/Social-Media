@@ -1,0 +1,666 @@
+<html>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="utf-8"/>
+    
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        
+        <title>Uniteam</title>
+    </head>
+
+    <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="http://code.jquery.com/jquery-1.5.js"></script>
+
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyCiNnT8E5j2clvB8zZrkz89axC32RtV24A",
+            authDomain: "uniteam-7558a.firebaseapp.com",
+            databaseURL: "https://uniteam-7558a.firebaseio.com",
+            projectId: "uniteam-7558a",
+            storageBucket: "uniteam-7558a.appspot.com",
+            messagingSenderId: "795089365122"
+        };
+        firebase.initializeApp(config);
+           
+        // Check to see if you are logged in
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user == null) {
+                alert("Not logged in.");
+                return;
+            } else {
+                userId = user.uid;
+                name = user.displayName;
+                imageUrl = user.photoURL;
+                email = user.email;
+                    
+                // write user data to users
+                writeUserData(userId, name, email, imageUrl);
+                
+                // write data to document
+                mydiv = document.getElementById("mydata");
+                mydiv.innerHTML = name
+                mydiv = document.getElementById("myname");
+                mydiv.innerHTML = name
+                mydiv = document.getElementById("myemail");
+                mydiv.innerHTML = email
+                mydiv = document.getElementById("myuserid");
+                mydiv.innerHTML = userId
+                
+                myphotodiv = document.getElementById("myphoto");
+                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; width: 42px; cursor: pointer'/>";
+                firebase.database().ref('/tweets').once('value').then(function(snapshot) {
+                    var data = (snapshot.val());
+                    if (data == null) {
+                      console.log("No data found at /tweets/" + userId);  
+                    } else {
+                        
+                      firebase.database().ref('/users').once('value').then(function(snapshot) { 
+                        var userdata = (snapshot.val());
+                        if (userdata != null) {
+                           dataarray = [data,userdata]
+                           console.log(dataarray)
+                           updatetweets(dataarray); 
+                        }
+                      });
+                      //console.log(data)
+                      //updatetweets(data);
+                    }
+                });
+            } // end user null check
+        }); // end check auth state
+        
+        function encodeImageFileAsURL() {
+            var filesSelected = document.getElementById("inputFileToLoad").files;
+            if (filesSelected.length > 0) {
+                var fileToLoad = filesSelected[0];
+                var fileReader = new FileReader();
+                fileReader.onload = function(fileLoadedEvent) {
+                    var srcData = fileLoadedEvent.target.result; // <--- data: base64
+                    //var newImage = document.createElement('img');
+                    //newImage.src = srcData;
+                    //document.getElementById("imgTest").innerHTML = newImage.outerHTML;
+                    document.getElementById("imgTest").innerHTML = srcData;
+                    //console.log("Converted Base64 version is: " + document.getElementById("imgTest").innerHTML);
+                    console.log(srcData);
+                }
+                fileReader.readAsDataURL(fileToLoad);
+            }
+        } // end function
+        
+        // write user data
+        function writeUserData(userId, name, email, imageUrl) {
+            firebase.database().ref('users/' + userId).set({
+                username: name,
+                email: email,
+                profile_picture : imageUrl
+            });
+        }
+        
+        function updatetweets(data) {
+            //var mylist = "<ul>";
+            var mytab = "<table id='myFeed'>";
+            users = data[1]; // put on top, because changed data - not good coding change later
+            data = data[0];
+            
+            for (var u in data) {
+                for (var t in data[u]) {
+                    mytab = mytab + "<tr>";
+                    var date = new Date(data[u][t].time);
+                    var time = date.toString();
+                    if (data[u][t].img != "") {
+                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%'></td>";
+                        mytab = mytab + "<td>" + users[u].username + "</td>";
+                        mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
+                        mytab = mytab + "<td>" + time + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
+                    } else {
+                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%; cursor: pointer'></td>";
+                        mytab = mytab + "<td>" + users[u].username + "</td>";
+                        mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
+                        mytab = mytab + "<td>" + time + "</td>";
+                        mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>"; 
+                    } 
+                    mytab = mytab + "</tr>";
+                }   
+            }
+            //mylist = mylist + "</ul>";
+            mytab = mytab + "</table>"
+            var mytdiv = document.getElementById("mytweets");
+            //mytdiv.innerHTML = mylist;
+            mytdiv.innerHTML = mytab;
+        }
+        
+        // write tweets to firebase
+        function tweet() {
+            
+            var twitdoc = document.getElementById("twit");
+            var twitimg = document.getElementById("imgTest");
+            var nameValue = twitdoc.value;
+            var imgValue = twitimg.innerHTML;
+            /*
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth() + 1;
+
+            var yyyy = today.getFullYear();
+            if (dd < 10) {
+              dd = '0' + dd;
+            } 
+            if (mm < 10) {
+              mm = '0' + mm;
+            } 
+            var today = dd + '/' + mm + '/' + yyyy;
+            */
+            var js_time = Date.now();
+            var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue});
+            twitdoc.value = "";
+            console.log("tweet written")
+            
+            firebase.database().ref('/tweets').once('value').then(function(snapshot) {
+                    var data = (snapshot.val());
+                    if (data == null) {
+                      console.log("No data found at /tweets/" + userId);  
+                    } else { 
+                        firebase.database().ref('/users').once('value').then(function(snapshot) { 
+                        var userdata = (snapshot.val());
+                        if (userdata != null) {
+                           dataarray = [data,userdata]
+                           console.log(dataarray)
+                           updatetweets(dataarray); 
+                        }
+                      });
+                    }
+                });
+             
+            // The unique key stored in tweetid is based on a timestamp, so list items will automatically be ordered chronologically. Because Firebase generates a unique key for each tweet, no write conflicts will occur if multiple users add a post at the same time. https://firebase.google.com/docs/database/admin/save-data
+            
+        }
+        
+        function signin() {
+            console.log("Signing in");
+            var provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithRedirect(provider).then(function(result) { 
+                window.location.replace("fbtest.html");
+            });
+        }
+        
+        function reload() {
+            window.location.reload()
+        }
+        
+        function signout() {
+            console.log("Signing out");
+            firebase.auth().signOut().then(function() {
+            });
+        }
+        
+        //modal JavaScript
+        // Get the modal
+        window.onload = function() {
+        
+        var modal = document.getElementById('myModal');
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+          modal.style.display = "block";
+        }
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+        }
+        
+        function like(x) {
+            x.classList.toggle("blue");
+        }
+        
+        function mode() {
+            document.getElementById("body").classList.toggle("night");
+        }
+        
+        function countChar(val) {
+            var len = val.value.length;
+            if (len >= 200) {
+                val.value = val.value.substring(0, 200);
+            } else {
+                $("#charNum").text(200 - len);
+            }
+        };
+        
+        function search(type) {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("search");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("myFeed");
+            tr = table.getElementsByTagName("tr");
+            column = parseInt(type, 10);
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[column];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }       
+            }
+        }
+        
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    $('#preview').attr('src', e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $("#inputFileToLoad").change(function() {
+            readURL(this);
+        });
+        
+        function show() {
+            document.getElementById("preview").style.display = "block";
+        }
+        
+        function fra() {
+            var s = document.getElementById("submit");
+            s.innerHTML = "Soumettre";
+            var so = document.getElementById("signout");
+            so.innerHTML = "Déconnexion";
+            var p = document.getElementById("myBtn");
+            p.innerHTML = "profil";
+            var so = document.getElementById("signin");
+            so.innerHTML = "Se connecter";
+            var p = document.getElementById("lang");
+            p.innerHTML = "Les langues";
+            var p = document.getElementById("username1");
+            p.innerHTML = "Nom d'utilisateur";
+            var so = document.getElementById("theme");
+            so.innerHTML = "Thème";
+            var p = document.getElementById("content1");
+            p.innerHTML = "Contenu";
+        }
+        
+         function Eng() {
+            var s = document.getElementById("submit");
+            s.innerHTML = "Submit";
+            var so = document.getElementById("signout");
+            so.innerHTML = "Sign out";
+            var p = document.getElementById("myBtn");
+            p.innerHTML = "Profile";
+            var so = document.getElementById("signin");
+            so.innerHTML = "Sign in";
+            var p = document.getElementById("lang");
+            p.innerHTML = "Languages";
+            var p = document.getElementById("username1");
+            p.innerHTML = "Username";
+            var so = document.getElementById("theme");
+            so.innerHTML = "Theme";
+            var p = document.getElementById("content1");
+            p.innerHTML = "Content";
+        }
+        
+        function Spa() {
+            var s = document.getElementById("submit");
+            s.innerHTML = "Enviar";
+            var so = document.getElementById("signout");
+            so.innerHTML = "Desconectar";
+            var p = document.getElementById("myBtn");
+            p.innerHTML = "Perfil";
+            var so = document.getElementById("signin");
+            so.innerHTML = "Registrarse";
+            var p = document.getElementById("lang");
+            p.innerHTML = "Idiomas";
+            var p = document.getElementById("username1");
+            p.innerHTML = "Nombre de usuario";
+            var so = document.getElementById("theme");
+            so.innerHTML = "Tema";
+            var p = document.getElementById("content1");
+            p.innerHTML = "Contenido";
+        }
+        
+    </script>
+    
+    <style>
+        th, td {
+            padding: 3px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            background-color: darkcyan;
+            padding: 6px;
+            padding-bottom: 0;
+            margin: 0;
+            -webkit-animation: fadeIn 1.0s ease forwards;
+            animation: fadeIn 1.0s ease forwards;
+            animation-timing-function: ease-out;
+        }
+        
+        button {
+            cursor: pointer;
+            padding: 5px;
+            background-color: teal;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 5px; 
+        }
+        
+        .round {
+            border-radius: 50px; 
+            padding: 7px;
+        }
+        
+        #post {
+            text-align: left;
+            float: left;
+            font-family: "Times New Roman", "Arial", sans-serif;
+        }
+        
+        #mytweets {
+            overflow-y: scroll;
+            height: 80vh;
+        }
+        
+        ul li {
+            display: block;
+            margin: 3px;
+            padding: 3px;
+            border-width: 1px;
+            border-style: solid;
+            border-color: teal;
+        }
+        
+        textarea {
+            min-width: 400px;
+            max-width: 95%;
+            min-height: 80px;
+            font-size: 12px;
+            resize: none;
+        }
+        
+        .column {
+            float: left;
+            width: 50%;
+        }
+
+        .row {
+            width: 80%; 
+            text-align: center; 
+            margin: auto; 
+            margin-top: 5px;
+        }
+        
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        .drop-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 100px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            right: 0;
+        }
+
+        .drop-content a {
+            font-size: 16px;
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .drop-content a:hover {background-color: #f1f1f1}
+
+        .dropdown:hover .drop-content {
+            display: block;
+        }
+       /*languages*/
+        .drop-cont {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 100px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            right: auto;
+        }
+        .drop-cont a {
+            font-size: 16px;
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .drop-cont a:hover {background-color: #f1f1f1}
+        .dropd:hover .drop-cont {
+            display: block;
+        }
+        
+        .blue {
+            color: cadetblue;
+        }
+        .night {
+            color: white;
+            background-color: black;
+        }
+        
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #search {
+            background-position: 8px 8px;
+            background-repeat: no-repeat;
+            width: 87%;
+            font-size: 14px;
+            padding: 10px 16px 10px 30px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        
+        div {
+            -webkit-animation: fadeIn 1.0s ease forwards;
+            animation: fadeIn 1.0s ease forwards;
+            animation-timing-function: ease-out;
+        }
+        @keyframes fadeIn {
+            0% {opacity:0;}
+            100% {opacity:1;}
+        }
+        
+        #loader {
+              position: absolute;
+              top: 40%;
+              left: 72%;
+              z-index: 1;
+              width: 80px;
+              height: 80px;
+              margin: -75px 0 0 -75px;
+              border: 12px solid #f3f3f3;
+              border-radius: 50%;
+              border-top: 12px solid darkcyan;
+              width: 80px;
+              height: 80px;
+              -webkit-animation: spin 2s linear infinite;
+              animation: spin 2s linear infinite;
+        }
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .modal-header {
+          padding: 2px 16px;
+          background-color: darkcyan;
+          color: white;
+        }
+        /* Modal Body */
+        .modal-body {padding: 2px 16px;}
+        /* Modal Footer */
+        .modal-footer {
+          padding: 2px 16px;
+          background-color: darkcyan;
+          color: white;
+        }
+        /* Modal Content */
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 15% auto;
+            border: 1px solid #888;
+            width: 80%;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+            animation-name: animatetop;
+            animation-duration: 0.4s;
+            animation-timing-function: ease-out;
+        }
+        /* Add Animation */
+        @keyframes animatetop {
+          from {top: -300px; opacity: 0}
+          to {top: 0; opacity: 1}
+        }
+        
+        @media (max-width: 1100px) {
+            .row {
+                width: 100%;
+                padding: 8px;
+                padding-top: 0;
+            }
+            .column {
+                float: none;
+                width: 100%;
+            }
+            #loader {
+                top: 60%;
+                left: 54%;
+            }
+        }
+        
+    </style>
+
+    <body style="margin: 0; overflow: hidden" id="body" class="night">
+        <h1 style="font-size: 36px">
+            <img src="title.jpg">
+            <button id="signin" onclick="signin()" style="float: left">Sign in</button>
+            
+              <div class="dropd" style="float: left; height: 36px; margin-right: 5px">
+                <button id="lang">Languages</button>
+                <div id="profile" class="drop-cont">
+                    <a><h4 id="lang">Languages</h4></a>
+                    <a><button onclick="fra()">French</button></a>
+                    <a><button onclick="Spa()">Spanish</button></a>
+                    <a><button onclick="Eng()">English</button></a>
+                </div>
+            </div>
+            
+            <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
+                <div id="myphoto" class="dropbtn" onclick="drop()" style="height: 100%"></div>
+                <div id="profile" class="drop-content">
+                    <a><div id="mydata"></div></a>
+                    <a><button id="myBtn">Profile</button></a>
+                    <a><button id="theme" onclick="mode()">Theme</button></a>
+                    <a><button id="signout" onclick="signout()">Sign out</button></a>
+                </div>
+            </div>
+        </h1>
+    
+        <div class="row">
+            <div id="post" class="column">
+                <form>
+                    <label for="twit">Post:</label><br>
+                    <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
+                    <div id="charNum" style="float: right; margin-right: 20px">200</div>
+                </form> 
+                <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL(); readURL(this)"/>
+                <br>
+                <button id="submit" type="button" onclick="tweet()" class="round" style="margin-bottom: 6px">Submit</button>
+                <div id="imgTest" style="display:none"></div>
+                <br>
+                <button onclick="show()">Preview</button>
+                <br>
+                <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%; padding-top: 5px"/>
+            </div>
+
+            <div class="column">
+                <br>
+                <input type="text" id="search" onkeyup="search()" placeholder="Search for a post..." title="Type in a keyword">
+                <button id="username1" onclick="search('1')">Username</button>
+                <button id="content1" onclick="search('2')">Content</button>
+                <div id="mytweets">Loading...<div id="loader"></div></div>
+            </div>
+        </div>
+        
+        <div id="myModal" class="modal">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <span class="close">&times;</span>
+                      <a><h2><div id="myname"></div></h2></a>
+                  </div>
+                  <div class="modal-body">
+                      <p>Email: </p>
+                      <div id="myemail"></div>
+                      <br>
+                      <p>UserID: </p>
+                      <div id="myuserid"></div>
+                  </div>
+                  <div class="modal-footer">
+                      <h3>Copyright Uniteam 2019</h3>
+                  </div>
+            </div>
+
+        </div>
+   
+    </body>
+
+</html>

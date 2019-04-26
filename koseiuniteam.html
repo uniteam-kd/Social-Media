@@ -10,6 +10,199 @@
         <title>Uniteam</title>
     </head>
 
+     <style>
+        tr:hover {background-color: #f5f5f5;}
+        th, td {
+            padding: 3px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            background-color: darkcyan;
+            padding: 5px;
+            margin: 0;
+        }
+        
+        h2 {
+            text-align: center;
+            color: white;
+            padding: 5px;
+            font-size: 40px;
+        }
+        
+        #myname {
+            text-align: center;
+            color: white;
+            font-size: 30px;
+            
+        }
+        
+        button {
+            cursor: pointer;
+            padding: 5px;
+            background-color: teal;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 5px; 
+        }
+        
+        .round {
+            border-radius: 50px; 
+            padding: 7px;
+        }
+        
+        #post {
+            text-align: left;
+            float: left;
+            font-family: "Times New Roman", "Arial", sans-serif;
+        }
+        
+        ul li {
+            display: block;
+            margin: 3px;
+            padding: 3px;
+            border-width: 1px;
+            border-style: solid;
+            border-color: teal;
+        }
+        
+        textarea {
+            min-width: 400px;
+            min-height: 80px;
+            font-size: 12px;
+        }
+        
+        .column {
+            float: left;
+            width: 50%;
+        }
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        /*user interface*/
+        .drop-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 100px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            right: 0;
+        }
+        .drop-content a {
+            font-size: 16px;
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .drop-content a:hover {background-color: #f1f1f1}
+        .dropdown:hover .drop-content {
+            display: block;
+        }
+        
+        /*languages*/
+        .drop-cont {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 100px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            right: auto;
+        }
+        .drop-cont a {
+            font-size: 16px;
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .drop-cont a:hover {background-color: #f1f1f1}
+        .dropd:hover .drop-cont {
+            display: block;
+        }
+        
+        /*modal css*/
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+/* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+}
+/* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+}
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+}
+        
+        /* Modal Header */
+.modal-header {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+/* Modal Body */
+.modal-body {padding: 2px 16px;}
+/* Modal Footer */
+.modal-footer {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+/* Modal Content */
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+/* Add Animation */
+@keyframes animatetop {
+  from {top: -300px; opacity: 0}
+  to {top: 0; opacity: 1}
+}
+        
+        .blue {
+            color: cadetblue;
+        }
+        
+    
+    </style>
+    
+    
     <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
 
@@ -24,7 +217,8 @@
     messagingSenderId: "795089365122"
   };
   firebase.initializeApp(config);
-                
+        
+        
         // Check to see if you are logged in
         firebase.auth().onAuthStateChanged(function(user) {
             if (user == null) {
@@ -114,13 +308,15 @@
                         mytab = mytab + "<td><img src='" + users[u].profile_picture + "' width='50px' style='border-radius: 50%'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
                         mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
+                        mytab = mytab + "<td>" + data[u][t].like + "</td>";
                         mytab = mytab + "<td>" + time + "<br><img src='" + data[u][t].img + "' width='300px'></td>";
                     } else {
                         mytab = mytab + "<td><img src='" + users[u].profile_picture + "' width='50px' style='border-radius: 50%; cursor: pointer'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
                         mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
                         mytab = mytab + "<td>" + time + "</td>";
-                        
+                        mytab = mytab + "<td><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>";
+                        mytab = mytab + "<td>" + data[u][t].like + "</td>";
                         
                     } 
                     mytab = mytab + "</tr>";
@@ -205,173 +401,87 @@ window.onclick = function(event) {
   }
 }
 }
+        function like(x) {
+            x.classList.toggle("blue");
+        }
         
+        function fra() {
+            var s = document.getElementById("submit");
+            s.innerHTML = "Soumettre";
+            var so = document.getElementById("signout");
+            so.innerHTML = "Déconnexion";
+            var p = document.getElementById("myBtn");
+            p.innerHTML = "profil";
+            var so = document.getElementById("signin");
+            so.innerHTML = "Se connecter";
+            var p = document.getElementById("lang");
+            p.innerHTML = "Les langues";
+        }
+        
+         function Eng() {
+            var s = document.getElementById("submit");
+            s.innerHTML = "Submit";
+            var so = document.getElementById("signout");
+            so.innerHTML = "Sign out";
+            var p = document.getElementById("myBtn");
+            p.innerHTML = "Profile";
+            var so = document.getElementById("signin");
+            so.innerHTML = "Sign in";
+            var p = document.getElementById("lang");
+            p.innerHTML = "Languages";
+        }
+        
+        function Spa() {
+            var s = document.getElementById("submit");
+            s.innerHTML = "Enviar";
+            var so = document.getElementById("signout");
+            so.innerHTML = "Desconectar";
+            var p = document.getElementById("myBtn");
+            p.innerHTML = "Perfil";
+            var so = document.getElementById("signin");
+            so.innerHTML = "Registrarse";
+            var p = document.getElementById("lang");
+            p.innerHTML = "Idiomas";
+        }
+        
+    /*   function userchange() {
+            var u = document.getElementById("uchange");
+        var newname = u.value;
+           
+        firebase.database().ref('users/' + userId).set({
+                username = user.displayName;
+                mydiv.innerHTML = username;
+                
+            });
+        
+        }
+        */
     </script>
     
-    <style>
-        tr:hover {background-color: #f5f5f5;}
-        th, td {
-            padding: 3px;
-        }
-        
-        h1 {
-            text-align: center;
-            color: white;
-            background-color: darkcyan;
-            padding: 5px;
-            margin: 0;
-        }
-        
-        button {
-            cursor: pointer;
-            padding: 5px;
-            background-color: teal;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            margin-top: 5px; 
-        }
-        
-        .round {
-            border-radius: 50px; 
-            padding: 7px;
-        }
-        
-        #post {
-            text-align: left;
-            float: left;
-            font-family: "Times New Roman", "Arial", sans-serif;
-        }
-        
-        ul li {
-            display: block;
-            margin: 3px;
-            padding: 3px;
-            border-width: 1px;
-            border-style: solid;
-            border-color: teal;
-        }
-        
-        textarea {
-            min-width: 400px;
-            min-height: 80px;
-            font-size: 12px;
-        }
-        
-        .column {
-            float: left;
-            width: 50%;
-        }
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-        
-        .drop-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 100px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            right: 0;
-        }
-        .drop-content a {
-            font-size: 16px;
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
-        .drop-content a:hover {background-color: #f1f1f1}
-        .dropdown:hover .drop-content {
-            display: block;
-        }
-        
-        /*modal css*/
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgb(0,0,0); /* Fallback color */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
-/* Modal Content/Box */
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
-}
-/* The Close Button */
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-}
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-}
-        
-        /* Modal Header */
-.modal-header {
-  padding: 2px 16px;
-  background-color: #5cb85c;
-  color: white;
-}
-/* Modal Body */
-.modal-body {padding: 2px 16px;}
-/* Modal Footer */
-.modal-footer {
-  padding: 2px 16px;
-  background-color: #5cb85c;
-  color: white;
-}
-/* Modal Content */
-.modal-content {
-  position: relative;
-  background-color: #fefefe;
-  margin: auto;
-  padding: 0;
-  border: 1px solid #888;
-  width: 80%;
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-  animation-name: animatetop;
-  animation-duration: 0.4s
-}
-/* Add Animation */
-@keyframes animatetop {
-  from {top: -300px; opacity: 0}
-  to {top: 0; opacity: 1}
-}
-        
-    
-    </style>
 
     <body style="margin: 0">
         <h1 style="font-size: 36px">
             <img src="title.jpg">
         
-            <button onclick="signin()" style="float: left">Sign in</button>
+            <button id="signin" onclick="signin()" style="float: left" lang="fr">Sign in</button>
             <button style="float: left" src="index.html"><i class="fa fa-home"></i></button>
+            
+            <div class="dropd" style="float: left; height: 36px; margin-right: 5px">
+                <button id="lang">Languages</button>
+                <div id="profile" class="drop-cont">
+                    <a><h4 id="lang">Languages</h4></a>
+                    <a><button onclick="fra()">French</button></a>
+                    <a><button onclick="Spa()">Spanish</button></a>
+                    <a><button onclick="Eng()">English</button></a>
+                </div>
+            </div>
             
             <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
                 <div id="myphoto" class="dropbtn" onclick="drop()" style="height: 100%"></div>
                 <div id="profile" class="drop-content">
                     <a><div id="mydata"></div></a>
                     <a><button id="myBtn">Profile</button></a>
-                    <a><button onclick="signout()">Sign out</button></a>
+                    <a><button id="signout" onclick="signout()">Sign out</button></a>
                 </div>
             </div>
         </h1>
@@ -384,7 +494,7 @@ window.onclick = function(event) {
                 </form> 
                 <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL();" />
                 <br>
-                <button type="button" onclick="tweet()" class="round">Submit</button>
+                <button id="submit" type="button" onclick="tweet()" class="round">Submit</button>
                 <div id="imgTest" style="display:none"></div>
             </div>
 
@@ -397,7 +507,7 @@ window.onclick = function(event) {
   <div class="modal-content">
   <div class="modal-header">
     <span class="close">&times;</span>
-      <a><div id="myname"><h2></h2></div></a>
+      <h2 id="myBtn">Profile</h2>
   </div>
   <div class="modal-body">
     <p>Email: </p>
@@ -405,9 +515,18 @@ window.onclick = function(event) {
       <br>
       <p>UserID: </p>
       <div id="myuserid"></div>
+      <br>
+      
+      <form>
+  Username:<br>
+ <input id="uchange" type="text" placeholder="New username here...">
+          <br>
+ <button type="submit" onclick="userchange()" value="Submit">Submit</button>
+      </form>
+      
   </div>
   <div class="modal-footer">
-    <h3>Modal Footer</h3>
+      <div id="myname"><h3></h3></div>
   </div>
 </div>
 
