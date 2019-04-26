@@ -102,7 +102,7 @@
         
         function updatetweets(data) {
             //var mylist = "<ul>";
-            var mytab = "<table>";
+            var mytab = "<table id='myFeed'>";
             users = data[1]; // put on top, because changed data - not good coding change later
             data = data[0];
             
@@ -121,7 +121,7 @@
                         mytab = mytab + "<td>" + users[u].username + "</td>";
                         mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
                         mytab = mytab + "<td>" + time + "</td>";
-                        mytab = mytab + "<td><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>"; 
+                        mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>"; 
                     } 
                     mytab = mytab + "</tr>";
                 }   
@@ -140,6 +140,20 @@
             var twitimg = document.getElementById("imgTest");
             var nameValue = twitdoc.value;
             var imgValue = twitimg.innerHTML;
+            /*
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth() + 1;
+
+            var yyyy = today.getFullYear();
+            if (dd < 10) {
+              dd = '0' + dd;
+            } 
+            if (mm < 10) {
+              mm = '0' + mm;
+            } 
+            var today = dd + '/' + mm + '/' + yyyy;
+            */
             var js_time = Date.now();
             var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue});
             twitdoc.value = "";
@@ -212,6 +226,10 @@
             x.classList.toggle("blue");
         }
         
+        function mode() {
+            document.getElementById("body").classList.toggle("night");
+        }
+        
         function countChar(val) {
             var len = val.value.length;
             if (len >= 200) {
@@ -221,10 +239,50 @@
             }
         };
         
+        function search(type) {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("search");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("myFeed");
+            tr = table.getElementsByTagName("tr");
+            column = parseInt(type, 10);
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[column];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }       
+            }
+        }
+        
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    $('#preview').attr('src', e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $("#inputFileToLoad").change(function() {
+            readURL(this);
+        });
+        
+        function show() {
+            document.getElementById("preview").style.display = "block";
+        }
+        
     </script>
     
     <style>
-        tr:hover {background-color: #f5f5f5;}
         th, td {
             padding: 3px;
         }
@@ -236,6 +294,9 @@
             padding: 6px;
             padding-bottom: 0;
             margin: 0;
+            -webkit-animation: fadeIn 1.0s ease forwards;
+            animation: fadeIn 1.0s ease forwards;
+            animation-timing-function: ease-out;
         }
         
         button {
@@ -326,6 +387,10 @@
         .blue {
             color: cadetblue;
         }
+        .night {
+            color: white;
+            background-color: black;
+        }
         
         .modal {
             display: none; /* Hidden by default */
@@ -338,15 +403,7 @@
             overflow: auto; /* Enable scroll if needed */
             background-color: rgb(0,0,0); /* Fallback color */
             background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
-}
+        }
 
         .close {
             color: #aaa;
@@ -361,9 +418,29 @@
             cursor: pointer;
         }
 
+        #search {
+            background-position: 8px 8px;
+            background-repeat: no-repeat;
+            width: 87%;
+            font-size: 14px;
+            padding: 10px 16px 10px 30px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        
+        div {
+            -webkit-animation: fadeIn 1.0s ease forwards;
+            animation: fadeIn 1.0s ease forwards;
+            animation-timing-function: ease-out;
+        }
+        @keyframes fadeIn {
+            0% {opacity:0;}
+            100% {opacity:1;}
+        }
+        
         #loader {
               position: absolute;
-              top: 25%;
+              top: 40%;
               left: 72%;
               z-index: 1;
               width: 80px;
@@ -401,15 +478,15 @@
         }
         /* Modal Content */
         .modal-content {
-          position: relative;
-          background-color: #fefefe;
-          margin: auto;
-          padding: 0;
-          border: 1px solid #888;
-          width: 80%;
-          box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-          animation-name: animatetop;
-          animation-duration: 0.4s
+            position: relative;
+            background-color: #fefefe;
+            margin: 15% auto;
+            border: 1px solid #888;
+            width: 80%;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+            animation-name: animatetop;
+            animation-duration: 0.4s;
+            animation-timing-function: ease-out;
         }
         /* Add Animation */
         @keyframes animatetop {
@@ -428,24 +505,23 @@
                 width: 100%;
             }
             #loader {
-                top: 50%;
+                top: 60%;
                 left: 54%;
             }
         }
         
     </style>
 
-    <body style="margin: 0; overflow: hidden">
+    <body style="margin: 0; overflow: hidden" id="body" class="night">
         <h1 style="font-size: 36px">
             <img src="title.jpg">
-        
             <button onclick="signin()" style="float: left">Sign in</button>
-            
             <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
                 <div id="myphoto" class="dropbtn" onclick="drop()" style="height: 100%"></div>
                 <div id="profile" class="drop-content">
                     <a><div id="mydata"></div></a>
                     <a><button id="myBtn">Profile</button></a>
+                    <a><button onclick="mode()">Theme</button></a>
                     <a><button onclick="signout()">Sign out</button></a>
                 </div>
             </div>
@@ -458,13 +534,23 @@
                     <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
                     <div id="charNum" style="float: right; margin-right: 20px">200</div>
                 </form> 
-                <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL();"/>
+                <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL(); readURL(this)"/>
                 <br>
-                <button type="button" onclick="tweet()" class="round">Submit</button>
+                <button type="button" onclick="tweet()" class="round" style="margin-bottom: 6px">Submit</button>
                 <div id="imgTest" style="display:none"></div>
+                <br>
+                <button onclick="show()">Preview</button>
+                <br>
+                <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%; padding-top: 5px"/>
             </div>
 
-        <div id="mytweets" class="column">Loading...<div id="loader"></div></div>
+            <div class="column">
+                <br>
+                <input type="text" id="search" onkeyup="search()" placeholder="Search for a post..." title="Type in a keyword">
+                <button onclick="search('1')">Username</button>
+                <button onclick="search('2')">Content</button>
+                <div id="mytweets">Loading...<div id="loader"></div></div>
+            </div>
         </div>
         
         <div id="myModal" class="modal">
@@ -481,7 +567,7 @@
                       <div id="myuserid"></div>
                   </div>
                   <div class="modal-footer">
-                      <h3>Modal Footer</h3>
+                      <h3>Copyright Uniteam 2019</h3>
                   </div>
             </div>
 
