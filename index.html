@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -51,6 +52,8 @@
                 
                 myphotodiv = document.getElementById("myphoto");
                 myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; width: 42px; cursor: pointer'/>";
+                myphotodiv = document.getElementById("myp");
+                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 100%; width: 100px; cursor: pointer'/>";
                 firebase.database().ref('/tweets').once('value').then(function(snapshot) {
                     var data = (snapshot.val());
                     if (data == null) {
@@ -102,7 +105,8 @@
         function updatetweets(data) {
             //var mylist = "<ul>";
             var mytab = "<table id='myFeed'>";
-            mytab = mytab + "<tr><td></td><th onclick='sortAlpha(1)'>Name</th><td></td><th onclick='sortTime(3)'>Time</th></tr>"
+            var i = 0;
+            mytab = mytab + "<tr id='tabHead'><td></td><th onclick='sortAlpha(1)'>Name</th><td></td><th onclick='sortTime(3)'>Time</th></tr>"
             users = data[1]; // put on top, because changed data - not good coding change later
             data = data[0];
             
@@ -115,25 +119,26 @@
                     if (data[u][t].img != "") {
                         mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
-                        mytab = mytab + "<td class='content'>" + data[u][t].tweet + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
+                        mytab = mytab + "<td id='unique" + i + "'>" + data[u][t].tweet + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
                         mytab = mytab + "<td>" + time + "</td>";
                         mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>";
                         if (users[u].username === name) {
-                            mytab = mytab + "<td><button onclick='drop()'>⋮</button></td>";
+                            mytab = mytab + "<td><button onclick='edit(" + i + ")' style='margin: 0'><i class='fa fa-wrench'></i></button><button onclick='delete()' style='margin: 0'><i class='fa fa-trash'></i></button></td>";
                         } else {
                             mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i>   </td>";
                         }
                     } else {
                         mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%; cursor: pointer'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
-                        mytab = mytab + "<td class='content'>" + data[u][t].tweet + "</td>";
+                        mytab = mytab + "<td id='unique" + i + "'>" + data[u][t].tweet + "</td>";
                         mytab = mytab + "<td>" + time + "</td>";
                         if (users[u].username === name) {
-                            mytab = mytab + "<td><div class='dropdown'><button>⋮</button><div class='drop-content' style='right: 0'><button onclick='edit()'>edit</button><button onclick='delete()'>delete</button></div></div></td>";
+                            mytab = mytab + "<td><button onclick='edit(" + i + ")' style='margin: 0'><i class='fa fa-wrench'></i></button><button onclick='delete()' style='margin: 0; padding: 6px'><i class='fa fa-trash'></i></button></td>";
                         } else {
                             mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>";
                         }
-                    } 
+                    }
+                    i++;
                     mytab = mytab + "</tr>";
                 }   
             }
@@ -146,6 +151,10 @@
         
         // write tweets to firebase
         function tweet() {
+            var twitdoc = document.getElementById("twit");
+            var twitimg = document.getElementById("imgTest");
+            var nameValue = twitdoc.value;
+            var imgValue = twitimg.innerHTML;
             var js_time = Date.now();
             var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue});
             twitdoc.value = "";
@@ -216,18 +225,34 @@
             x.classList.toggle("blue");
         }
         
-        /*function edit() {
-            $(this).closest('tr').children('td.content').innerHTML = "<input type='text' value='" + $(this).closest('tr').children('td.content').text() + "'><button onclick'updateData()'></button>";
-        }*/
+        function edit(i) {
+            var u = "unique" + i;
+            var editId = document.getElementById(u);
+            var keyId;
+            for (key of Object.keys(users)) {
+                if (users[key].tweet === editId.value) {
+                    keyId = key;
+                }
+            }
+            /*if (editId.contentEditable == true) {
+                editId.contentEditable = false;
+            } else {
+                editId.contentEditable = true;
+            }*/
+            editId.contentEditable = true;
+            editId.value = editId.innerHTML;
+            $("#unique" + i).keypress(function(event) {
+                if (event.which == 13) {
+                    //editId.innerHTML = editId.value;
+                    editId.contentEditable = false;
+                    firebase.database().ref(keyId).update({tweet: editId.value});
+                }
+            });
+        }
         
         /*function delete() {
             
         }*/
-        
-        function updateData() {
-           var userId = document.getElementById("uid").innerHTML;
-           firebase.database().ref('/tweets/' + userId).update({tweet: nameValue}); 
-       }
         
         function mode() {
             document.getElementById("body").classList.toggle("night");
@@ -422,7 +447,7 @@
             }
         }
         
-        function fra() {
+        function Fr() {
             var s = document.getElementById("submit");
             s.innerHTML = "Soumettre";
             var so = document.getElementById("signout");
@@ -460,7 +485,7 @@
             p.innerHTML = "Content";
         }
         
-        function Spa() {
+        function Sp() {
             var s = document.getElementById("submit");
             s.innerHTML = "Enviar";
             var so = document.getElementById("signout");
@@ -479,6 +504,41 @@
             p.innerHTML = "Contenido";
         }
         
+        var myVar;
+
+        function myFunction() {
+            myVar = setTimeout(showPage, 3000);
+        }
+
+        function showPage() {
+            document.getElementById("loader").style.display = "none";
+            document.getElementById("myDiv").style.display = "block";
+        }
+
+        function openPage(pageName, elmnt, color) {
+            // Hide all elements with class="tabcontent" by default */
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Remove the background color of all tablinks/buttons
+            tablinks = document.getElementsByClassName("tablink");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].style.backgroundColor = "";
+            }
+
+            // Show the specific tab content
+            document.getElementById(pageName).style.display = "block";
+
+            // Add the specific color to the button used to open the tab content
+            elmnt.style.backgroundColor = color;
+        }
+        
+        // Get the element with id="defaultOpen" and click on it
+        //document.getElementById("defaultOpen").click();
+        
     </script>
     
     <style>
@@ -488,7 +548,6 @@
         th {
             cursor: pointer;
             font-size: 18px;
-            position: sticky;
             top: 0;
             z-index: 1;
         }
@@ -514,7 +573,7 @@
             color: white;
             font-size: 12px;
             font-weight: bold;
-            margin-top: 5px; 
+            margin-top: 11px;
         }
         
         .round {
@@ -572,7 +631,6 @@
             display: none;
             position: absolute;
             background-color: #f9f9f9;
-            min-width: 100px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
         }
@@ -590,7 +648,6 @@
         .dropdown {
             float: left;
             height: 36px;
-            margin-right: 5px;
         }
         .dropdown:hover .drop-content {
             display: block;
@@ -725,71 +782,114 @@
     </style>
 
     <body style="margin: 0; overflow: hidden" id="body" class="night">
-        <h1 style="font-size: 36px">
-            <img src="title.jpg">
-            <button id="signin" onclick="signin()" style="float: left">Sign in</button>
-            <div class="dropdown">
-                <button id="lang">Languages</button>
-                <div class="drop-content">
-                    <a id="lang">Languages</a>
-                    <a><button onclick="fra()">French</button></a>
-                    <a><button onclick="Spa()">Spanish</button></a>
-                    <a><button onclick="Eng()">English</button></a>
+        <div id="Home" class="tabcontent">
+            <h1>
+                <img src="title.jpg">
+                <button id="signin" onclick="signin()" style="float: left">Sign in</button>
+                <div class="dropdown">
+                    <button id="lang" style="">Languages</button>
+                    <div class="drop-content">
+                        <a>Languages</a>
+                        <a><button onclick="Fr()">French</button></a>
+                        <a><button onclick="Sp()">Spanish</button></a>
+                        <a><button onclick="Eng()">English</button></a>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="dropdown" style="float: right">
-                <div id="myphoto" class="dropbtn" style="height: 100%"></div>
-                <div id="profile" class="drop-content" style="right: 0">
-                    <a><div id="mydata"></div></a>
-                    <a><button id="myBtn">Profile</button></a>
-                    <a><button id="theme" onclick="mode()">Theme</button></a>
-                    <a><button id="signout" onclick="signout()">Sign out</button></a>
-                </div>
-            </div>
-        </h1>
-    
-        <div class="row">
-            <div id="post" class="column">
-                <form>
-                    <label for="twit">Post:</label><br>
-                    <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
-                    <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL(); readURL(this)"/>
-                    <div id="charNum" style="float: right; margin-right: 28px">200</div>
-                </form>
-                <button id="submit" onclick="tweet()" class="round" style="margin-bottom: 6px">Submit</button>
-                <div id="imgTest" style="display:none"></div>
-                <button onclick="show()" style="margin-bottom: 5px">Preview</button>
-                <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%"/>
-            </div>
 
-            <div class="column">
-                <br>
-                <input type="text" id="search" onkeyup="search()" placeholder="Search for a post..." title="Type in a keyword">
-                <br>
-                <button id="username1" onclick="search('1')">Username</button>
-                <button id="content1" onclick="search('2')">Content</button>
-                <br>
-                <div id="mytweets"><br>Loading...<div id="loader"></div></div>
+                <div class="dropdown" style="float: right">
+                    <div id="myphoto" style="height: 100%"></div>
+                    <div id="profile" class="drop-content" style="right: 0">
+                        <a><div id="mydata"></div></a>
+                        <a><button id="myBtn">Profile</button></a>
+                        <a><button id="theme" onclick="mode()">Theme</button></a>
+                        <a><button id="signout" onclick="signout()">Sign out</button></a>
+                    </div>
+                </div>
+                <button id="ProfilePage" class="tablink" onclick="openPage('Profile', this, 'red')" style="float: right">Profile</button>
+                <button  id="HomePage" class="tablink" onclick="openPage('Home', this, 'blue')" style="float: left">Home</button>
+            </h1>
+
+            <div class="row">
+                <div id="post" class="column">
+                    <form>
+                        <label for="twit">Post:</label><br>
+                        <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
+                        <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL(); readURL(this)"/>
+                        <div id="charNum" style="float: right; margin-right: 28px">200</div>
+                    </form>
+                    <button id="submit" onclick="tweet()" class="round" style="margin-bottom: 6px">Submit</button>
+                    <div id="imgTest" style="display:none"></div>
+                    <button onclick="show()" style="margin-bottom: 5px">Preview</button>
+                    <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%"/>
+                </div>
+
+                <div class="column">
+                    <br>
+                    <input type="text" id="search" onkeyup="search()" placeholder="Search for a post..." title="Type in a keyword">
+                    <br>
+                    <button id="username1" onclick="search('1')">Username</button>
+                    <button id="content1" onclick="search('2')">Content</button>
+                    <br>
+                    <div id="mytweets"><br>Loading...<div id="loader"></div></div>
+                </div>
             </div>
+        </div>
+    </body>
+    
+    <body style="margin: 0; overflow: hidden" id="body" class="night">
+        <div id="Profile" class="tabcontent">
+            <h1 style="font-size: 36px">
+                <img src="title.jpg">
+                <button id="signin" onclick="signin()" style="float: left">Sign in</button>
+                <div class="dropdown" style="float: left; height: 36px; margin-right: 5px">
+                    <button id="lang">Languages</button>
+                    <div class="drop-content">
+                        <a><h4 id="lang">Languages</h4></a>
+                        <a><button onclick="fra()">French</button></a>
+                        <a><button onclick="Spa()">Spanish</button></a>
+                        <a><button onclick="Eng()">English</button></a>
+                    </div>
+                </div>
+                <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
+                    <div id="myphoto" style="height: 100%"></div>
+                    <div id="profile" class="drop-content">
+                        <a><div id="mydata"></div></a>
+                        <a><button id="myBtn">Profile</button></a>
+                        <a><button id="theme" onclick="mode()">Theme</button></a>
+                        <a><button id="signout" onclick="signout()">Sign out</button></a>
+                        </div>
+                </div>
+                <button id="ProfilePage" class="tablink" onclick="openPage('Profile', this, 'red')" style="float: right">Profile</button>
+                <button id="HomePage" class="tablink" onclick="openPage('Home', this, 'blue')" style="float: left">Home</button>
+            </h1>
+            <h3 align="middle">Profile</h3>
+            <div id="myp" align="middle"></div>
+            <p align="middle">Name: </p>
+            <div id="myname" align="middle"></div>
+            <br>
+            <p align="middle">Email: </p>
+            <div id="myemail" align="middle"></div>
+            <br>
+            <p align="middle">UserID: </p>
+            <div id="myuserid" align="middle"></div>
         </div>
         
         <div id="myModal" class="modal">
-              <div class="modal-content">
-                  <div class="modal-header">
-                      <span class="close">&times;</span>
-                      <a><h2><div id="myname"></div></h2></a>
-                  </div>
-                  <div class="modal-body" id="bkgrnd" style="background-color: black">
-                      <p>Email: </p>
-                      <div id="myemail"></div>
-                      <br>
-                      <p>UserID: </p>
-                      <div id="myuserid"></div>
-                  </div>
-                  <div class="modal-footer">
-                      <h3>Copyright Uniteam 2019</h3>
-                  </div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="close">&times;</span>
+                    <a><h2><div id="myname"></div></h2></a>
+                </div>
+                <div class="modal-body" id="bkgrnd" style="background-color: black">
+                    <p>Email: </p>
+                    <div id="myemail"></div>
+                    <br>
+                    <p>UserID: </p>
+                    <div id="myuserid"></div>
+                </div>
+                <div class="modal-footer">
+                    <h3>Copyright Uniteam 2019</h3>
+                </div>
             </div>
 
         </div>
