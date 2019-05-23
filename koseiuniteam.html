@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -12,9 +13,14 @@
     <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="http://code.jquery.com/jquery-1.5.js"></script>
+<<<<<<< HEAD
     <script src="https://code.jquery.com/jquery-2.2.0.js"></script>
     
 <script>
+=======
+
+    <script>
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
         // Initialize Firebase
         var config = {
             apiKey: "AIzaSyCiNnT8E5j2clvB8zZrkz89axC32RtV24A",
@@ -151,10 +157,13 @@
         
         // write tweets to firebase
         function tweet() {
+<<<<<<< HEAD
             var twitdoc = document.getElementById("twit");
             var twitimg = document.getElementById("imgTest");
             var nameValue = twitdoc.value;
             var imgValue = twitimg.innerHTML;
+=======
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
             var js_time = Date.now();
             var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue});
             twitdoc.value = "";
@@ -200,6 +209,7 @@
         
         //modal JavaScript
         // Get the modal
+<<<<<<< HEAD
       //  window.onload = function() {
         
        // var modal = document.getElementById('myModal');
@@ -222,6 +232,30 @@
     //      }
       //  }
         //}
+=======
+        window.onload = function() {
+        
+        var modal = document.getElementById('myModal');
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+        // When the user clicks on the button, open the modal 
+        btn.onclick = function() {
+          modal.style.display = "block";
+        }
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+        }
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
         
         function like(x) {
             x.classList.toggle("blue");
@@ -521,7 +555,11 @@
             for (i = 0; i < tablinks.length; i++) {
                 tablinks[i].style.backgroundColor = "";
             }
+<<<<<<< HEAD
             console.log(pageName)
+=======
+
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
             // Show the specific tab content
             document.getElementById(pageName).style.display = "block";
 
@@ -530,7 +568,11 @@
         }
 
         // Get the element with id="defaultOpen" and click on it
+<<<<<<< HEAD
        // document.getElementById("defaultOpen").click();
+=======
+        document.getElementById("defaultOpen").click();
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
         
         
       //  var colors = ['green', 'orange', 'blue','red','yellow','black','brown','violet'];
@@ -738,6 +780,7 @@
             border: 1px solid #ddd;
             margin-bottom: 10px;
         }
+<<<<<<< HEAD
         
         div {
             -webkit-animation: fadeIn 1.0s ease forwards;
@@ -917,6 +960,159 @@
         }
         
         
+=======
+        
+        div {
+            -webkit-animation: fadeIn 1.0s ease forwards;
+            animation: fadeIn 1.0s ease forwards;
+            animation-timing-function: ease-out;
+        }
+        @keyframes fadeIn {
+            0% {opacity:0;}
+            100% {opacity:1;}
+        }
+        
+        #loader {
+              position: absolute;
+              top: 40%;
+              left: 72%;
+              z-index: 1;
+              width: 80px;
+              height: 80px;
+              margin: -75px 0 0 -75px;
+              border: 12px solid #f3f3f3;
+              border-radius: 50%;
+              border-top: 12px solid darkcyan;
+              width: 80px;
+              height: 80px;
+              -webkit-animation: spin 2s linear infinite;
+              animation: spin 2s linear infinite;
+        }
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .modal-header {
+          padding: 2px 16px;
+          background-color: darkcyan;
+          color: white;
+        }
+        /* Modal Body */
+        .modal-body {padding: 2px 16px;}
+        /* Modal Footer */
+        .modal-footer {
+          padding: 2px 16px;
+          background-color: darkcyan;
+          color: white;
+        }
+        /* Modal Content */
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 15% auto;
+            border: 1px solid #888;
+            width: 80%;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+            animation-name: animatetop;
+            animation-duration: 0.4s;
+            animation-timing-function: ease-out;
+        }
+        /* Add Animation */
+        @keyframes animatetop {
+          from {top: -300px; opacity: 0}
+          to {top: 0; opacity: 1}
+        }
+        
+        @media (max-width: 1100px) {
+            .row {
+                width: 100%;
+                padding: 8px;
+                padding-top: 0;
+            }
+            .column {
+                float: none;
+                width: 100%;
+            }
+            #loader {
+                top: 60%;
+                left: 54%;
+            }
+        }
+        
+        #ProfilePage:hover {
+            background-color: darkturquoise;
+            color: azure;
+        }
+        
+        #HomePage:hover {
+            background-color: darkturquoise;
+            color: azure;
+        }
+        
+       #loader {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          z-index: 1;
+          width: 150px;
+          height: 150px;
+          margin: -75px 0 0 -75px;
+          border: 16px solid #f3f3f3;
+          border-radius: 50%;
+          border-top: 16px solid #3498db;
+          width: 120px;
+          height: 120px;
+          -webkit-animation: spin 2s linear infinite;
+          animation: spin 2s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        /* Add animation to "page content" */
+        .animate-bottom {
+          position: relative;
+          -webkit-animation-name: animatebottom;
+          -webkit-animation-duration: 1s;
+          animation-name: animatebottom;
+          animation-duration: 1s
+        }
+
+        @-webkit-keyframes animatebottom {
+          from { bottom:-100px; opacity:0 } 
+          to { bottom:0px; opacity:1 }
+        }
+
+        @keyframes animatebottom { 
+          from{ bottom:-100px; opacity:0 } 
+          to{ bottom:0; opacity:1 }
+        }
+
+        #myDiv {
+          display: none;
+          text-align: center;
+        }
+
+        .center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
     </style>
     
     <body style="margin: 0; overflow: hidden" id="body" class="night">
@@ -944,14 +1140,22 @@
                 </div>
                 <button id="ProfilePage" class="tablink" onclick="openPage('Profile', this, 'red')" style="float: right">Profile</button>
                 <button  id="HomePage" class="tablink" onclick="openPage('Home', this, 'blue')" style="float: left">Home</button>
+<<<<<<< HEAD
                 <button  id="Audio" class="tablink" onclick="openPage('Audio' this, 'black')" style="float: right">Audio</button>
                 
+=======
+                <button id="PostPage" class="tablink" onclick="openPage('Post', this, 'red')" style="float: right">Post</button>
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
             </h1>
         
             <div class="loader"></div>
       
             <div class="row">
+<<<<<<< HEAD
                     <div id="post" class="column">
+=======
+                <div id="post" class="column">
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
                     <form>
                         <label for="twit">Post:</label><br>
                         <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
@@ -964,6 +1168,7 @@
                     <br>
                     <button onclick="show()" style="margin-bottom: 5px">Preview</button>
                     <br>
+<<<<<<< HEAD
                     <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%; height: 65%"/>
                         
                     <div class="audio">
@@ -974,6 +1179,11 @@
                 </div>
                 
                     
+=======
+                    <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%"/>
+                </div>
+
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
                 <div class="column">
                     <br>
                     <input type="text" id="search" onkeyup="search()" placeholder="Search for a post..." title="Type in a keyword">
@@ -983,6 +1193,7 @@
                     <div id="mytweets">Loading...<div id="loader"></div></div>
                 </div>
             </div>
+<<<<<<< HEAD
         </div>
     
         
@@ -990,6 +1201,115 @@
            
         
 
+=======
+        </div>
+    
+        <div id="Post" class="tabcontent">
+            <h1 style="font-size: 36px">
+                <img src="title.jpg">
+                <button id="signin" onclick="signin()" style="float: left">Sign in</button>
+                <div class="dropd" style="float: left; height: 36px; margin-right: 5px">
+                    <button id="lang">Languages</button>
+                    <div class="drop-cont">
+                        <a><h4 id="lang">Languages</h4></a>
+                        <a><button onclick="fra()">French</button></a>
+                        <a><button onclick="Spa()">Spanish</button></a>
+                        <a><button onclick="Eng()">English</button></a>
+                    </div>
+                </div>
+                <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
+                    <div id="myphoto" class="dropbtn" onclick="drop()" style="height: 100%"></div>
+                    <div id="profile" class="drop-content">
+                        <a><div id="mydata"></div></a>
+                        <a><button id="myBtn">Profile</button></a>
+                        <a><button id="theme" onclick="mode()">Theme</button></a>
+                        <a><button id="signout" onclick="signout()">Sign out</button></a>
+                    </div>
+                </div>
+                <button id="ProfilePage" class="tablink" onclick="openPage('Profile', this, 'red')" style="float: right">Profile</button>
+                <button  id="HomePage" class="tablink" onclick="openPage('Home', this, 'blue')" style="float: left">Home</button>
+                <button id="PostPage" class="tablink" onclick="openPage('Post', this, 'red')" style="float: right">Post</button>
+            </h1>
+            
+            <div id="post" class="column" width="100%">
+                <form>
+                    <label for="twit">Post:</label><br>
+                    <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
+                    <div id="charNum" style="float: right; margin-right: 20px">200</div>
+                </form> 
+                <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL(); readURL(this)"/>
+                <br>
+                <button id="submit" type="button" onclick="tweet()" class="round" style="margin-bottom: 6px">Submit</button>
+                <div id="imgTest" style="display:none"></div>
+                <br>
+                <button onclick="show()" style="margin-bottom: 5px">Preview</button>
+                <br>
+                <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%"/>
+            </div>
+
+        </div>
+    </body>
+        
+    <body style="margin: 0; overflow: hidden" id="body" class="night">
+        <div id="Profile" class="tabcontent">
+            <h1 style="font-size: 36px">
+                <img src="title.jpg">
+                <button id="signin" onclick="signin()" style="float: left">Sign in</button>
+                <div class="dropd" style="float: left; height: 36px; margin-right: 5px">
+                    <button id="lang">Languages</button>
+                    <div class="drop-cont">
+                        <a><h4 id="lang">Languages</h4></a>
+                        <a><button onclick="fra()">French</button></a>
+                        <a><button onclick="Spa()">Spanish</button></a>
+                        <a><button onclick="Eng()">English</button></a>
+                    </div>
+                </div>
+                <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
+                    <div id="myphoto" class="dropbtn" onclick="drop()" style="height: 100%"></div>
+                    <div id="profile" class="drop-content">
+                        <a><div id="mydata"></div></a>
+                        <a><button id="myBtn">Profile</button></a>
+                        <a><button id="theme" onclick="mode()">Theme</button></a>
+                        <a><button id="signout" onclick="signout()">Sign out</button></a>
+                        </div>
+                </div>
+                <button id="ProfilePage" class="tablink" onclick="openPage('Profile', this, 'red')" style="float: right">Profile</button>
+                <button id="HomePage" class="tablink" onclick="openPage('Home', this, 'blue')" style="float: left">Home</button>
+                <button id="PostPage" class="tablink" onclick="openPage('Post', this, 'red')" style="float: right">Post</button>
+            </h1>
+            <h3 align="middle">Profile</h3>
+            <div id="myp" align="middle"></div>
+            <p align="middle">Name: </p>
+            <div id="myname" align="middle"></div>
+            <br>
+            <p align="middle">Email: </p>
+            <div id="myemail" align="middle"></div>
+            <br>
+            <p align="middle">UserID: </p>
+            <div id="myuserid" align="middle"></div>
+        </div>        
+        
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="close">&times;</span>
+                    <a><h2><div id="myname"></div></h2></a>
+                </div>
+                <div class="modal-body" id="bkgrnd" style="background-color: black">
+                    <p>Email: </p>
+                    <div id="myemail"></div>
+                    <br>
+                    <p>UserID: </p>
+                    <div id="myuserid"></div>
+                </div>
+                <div class="modal-footer">
+                    <h3>Copyright Uniteam 2019</h3>
+                </div>
+            </div>
+            
+        </div>
+   
+>>>>>>> 137187c5b1a066e759d661a92956e34374c37d4e
     </body>
         
     <body style="margin: 0; overflow: hidden" id="body" class="night">
