@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="http://code.jquery.com/jquery-1.5.js"></script>
-
     <script>
         // Initialize Firebase
         var config = {
@@ -54,7 +53,7 @@
                 firebase.database().ref('/tweets').once('value').then(function(snapshot) {
                     var data = (snapshot.val());
                     if (data == null) {
-                      console.log("No data found at /tweets/" + userId);  
+                      console.log("No data found at /tweets/" + userId);
                     } else {
                         
                       firebase.database().ref('/users').once('value').then(function(snapshot) { 
@@ -102,25 +101,37 @@
         function updatetweets(data) {
             //var mylist = "<ul>";
             var mytab = "<table id='myFeed'>";
+            mytab = mytab + "<tr><td></td><th onclick='sortAlpha(1)'>Name</th><td></td><th onclick='sortTime(3)'>Time</th></tr>"
             users = data[1]; // put on top, because changed data - not good coding change later
             data = data[0];
             
             for (var u in data) {
                 for (var t in data[u]) {
                     mytab = mytab + "<tr>";
-                    var date = new Date(data[u][t].time);
+                    var ago = new Date(data[u][t].time);
+                    var date = timeSince(ago);
                     var time = date.toString();
                     if (data[u][t].img != "") {
                         mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
-                        mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
-                        mytab = mytab + "<td>" + time + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
+                        mytab = mytab + "<td class='content'>" + data[u][t].tweet + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
+                        mytab = mytab + "<td>" + time + "</td>";
+                        mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>";
+                        if (users[u].username === name) {
+                            mytab = mytab + "<td><button onclick='drop()'>⋮</button></td>";
+                        } else {
+                            mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i>   </td>";
+                        }
                     } else {
                         mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%; cursor: pointer'></td>";
                         mytab = mytab + "<td>" + users[u].username + "</td>";
-                        mytab = mytab + "<td>" + data[u][t].tweet + "</td>";
+                        mytab = mytab + "<td class='content'>" + data[u][t].tweet + "</td>";
                         mytab = mytab + "<td>" + time + "</td>";
-                        mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>"; 
+                        if (users[u].username === name) {
+                            mytab = mytab + "<td><div class='dropdown'><button>⋮</button><div class='drop-content' style='right: 0'><button onclick='edit()'>edit</button><button onclick='delete()'>delete</button></div></div></td>";
+                        } else {
+                            mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>";
+                        }
                     } 
                     mytab = mytab + "</tr>";
                 }   
@@ -134,24 +145,6 @@
         
         // write tweets to firebase
         function tweet() {
-            
-            var twitdoc = document.getElementById("twit");
-            var twitimg = document.getElementById("imgTest");
-            var nameValue = twitdoc.value;
-            var imgValue = twitimg.innerHTML;
-            /*
-            var today = new Date();
-            var dd = today.getDate();
-            var mm = today.getMonth() + 1;
-            var yyyy = today.getFullYear();
-            if (dd < 10) {
-              dd = '0' + dd;
-            } 
-            if (mm < 10) {
-              mm = '0' + mm;
-            } 
-            var today = dd + '/' + mm + '/' + yyyy;
-            */
             var js_time = Date.now();
             var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue});
             twitdoc.value = "";
@@ -195,8 +188,6 @@
             });
         }
         
-        //modal JavaScript
-        // Get the modal
         window.onload = function() {
         
         var modal = document.getElementById('myModal');
@@ -223,6 +214,19 @@
         function like(x) {
             x.classList.toggle("blue");
         }
+        
+        /*function edit() {
+            $(this).closest('tr').children('td.content').innerHTML = "<input type='text' value='" + $(this).closest('tr').children('td.content').text() + "'><button onclick'updateData()'></button>";
+        }*/
+        
+        /*function delete() {
+            
+        }*/
+        
+        function updateData() {
+           var userId = document.getElementById("uid").innerHTML;
+           firebase.database().ref('/tweets/' + userId).update({tweet: nameValue}); 
+       }
         
         function mode() {
             document.getElementById("body").classList.toggle("night");
@@ -262,6 +266,134 @@
                 }       
             }
         }
+        
+        function sortAlpha(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myFeed");
+            switching = true;
+            dir = "asc"; 
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("td")[n];
+                    y = rows[i + 1].getElementsByTagName("td")[n];
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                            shouldSwitch= true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount ++;      
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+        function sortTime(n) {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myFeed");
+            switching = true;
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("td")[n].innerHTML;
+                    var xvalue = (Number(x.slice(0, 2)));
+                    y = rows[i + 1].getElementsByTagName("td")[n].innerHTML;
+                    var yvalue = (Number(y.slice(0, 2)));
+                    
+                    if (x.includes("minute")) {
+                        xvalue = xvalue * 60;
+                    } else if (x.includes("hour")) {
+                        xvalue = xvalue * 60 * 60;
+                    } else if (x.includes("day")) {
+                        xvalue = xvalue * 60 * 60 * 24;
+                    } else if (x.includes("month")) {
+                        xvalue = xvalue * 60 * 60 * 24 * 30;
+                    } else if (x.includes("year")) {
+                        xvalue = xvalue * 60 * 60 * 24 * 30 * 12;
+                    }
+                    if (y.includes("minute")) {
+                        yvalue = yvalue * 60;
+                    } else if (y.includes("hour")) {
+                        yvalue = yvalue * 60 * 60;
+                    } else if (y.includes("day")) {
+                        yvalue = yvalue * 60 * 60 * 24;
+                    } else if (y.includes("month")) {
+                        yvalue = yvalue * 60 * 60 * 24 * 30;
+                    } else if (y.includes("year")) {
+                        yvalue = yvalue * 60 * 60 * 24 * 30 * 12;
+                    } 
+                    
+                    if (xvalue > yvalue) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+        
+        var timeSince = function(date) {
+            if (typeof date !== 'object') {
+                date = new Date(date);
+            }
+            
+            var seconds = Math.floor((new Date() - date) / 1000);
+            var intervalType;
+                           
+            var interval = Math.floor(seconds / 31536000);
+            if (interval >= 1) {
+                intervalType = 'year';
+            } else {
+                interval = Math.floor(seconds / 2592000);
+                if (interval >= 1) {
+                    intervalType = 'month';
+                } else {
+                    interval = Math.floor(seconds / 86400);
+                    if (interval >= 1) {
+                        intervalType = 'day';
+                    } else {
+                        interval = Math.floor(seconds / 3600);
+                        if (interval >= 1) {
+                            intervalType = "hour";
+                        } else {
+                            interval = Math.floor(seconds / 60);
+                            if (interval >= 1) {
+                                intervalType = "minute";
+                            } else {
+                                interval = seconds;
+                                intervalType = "second";
+                            }
+                        }
+                    }
+                }
+            }
+                        
+            if (interval > 1 || interval === 0) {
+                intervalType += 's';
+                        }
+                            
+            return interval + ' ' + intervalType + ' ago';
+        };
         
         function readURL(input) {
             if (input.files && input.files[0]) {
@@ -306,7 +438,7 @@
             p.innerHTML = "Aperçu";
         }
         
-         function Eng() {
+        function Eng() {
             var s = document.getElementById("submit");
             s.innerHTML = "Submit";
             var so = document.getElementById("signout");
@@ -354,9 +486,17 @@
         th, td {
             padding: 3px;
         }
+        th {
+            cursor: pointer;
+            font-size: 18px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
         
         h1 {
             text-align: center;
+            position: relative;
             color: white;
             background-color: darkcyan;
             padding: 6px;
@@ -365,6 +505,7 @@
             -webkit-animation: fadeIn 1.0s ease forwards;
             animation: fadeIn 1.0s ease forwards;
             animation-timing-function: ease-out;
+            z-index: 1;
         }
         
         button {
@@ -415,7 +556,7 @@
             width: 50%;
         }
         .row {
-            width: 80%; 
+            width: 90%; 
             text-align: center; 
             margin: auto; 
             margin-top: 5px;
@@ -434,7 +575,6 @@
             min-width: 100px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
-            right: 0;
         }
         .drop-content a {
             font-size: 16px;
@@ -444,27 +584,12 @@
             display: block;
         }
         .drop-content:hover {background-color: #f1f1f1}
+        .dropdown {
+            float: left;
+            height: 36px;
+            margin-right: 5px;
+        }
         .dropdown:hover .drop-content {
-            display: block;
-        }
-       /*languages*/
-        .drop-cont {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 100px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            right: auto;
-        }
-        .drop-cont a {
-            font-size: 16px;
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
-        .drop-cont:hover {background-color: #f1f1f1}
-        .dropd:hover .drop-cont {
             display: block;
         }
         
@@ -511,8 +636,8 @@
         }
         
         div {
-            -webkit-animation: fadeIn 1.0s ease forwards;
-            animation: fadeIn 1.0s ease forwards;
+            -webkit-animation: fadeIn 0.8s ease forwards;
+            animation: fadeIn 0.8s ease forwards;
             animation-timing-function: ease-out;
         }
         @keyframes fadeIn {
@@ -523,7 +648,7 @@
         #loader {
               position: absolute;
               top: 40%;
-              left: 72%;
+              left: 74%;
               z-index: 1;
               width: 80px;
               height: 80px;
@@ -598,19 +723,19 @@
         <h1 style="font-size: 36px">
             <img src="title.jpg">
             <button id="signin" onclick="signin()" style="float: left">Sign in</button>
-            <div class="dropd" style="float: left; height: 36px; margin-right: 5px">
+            <div class="dropdown">
                 <button id="lang">Languages</button>
-                <div class="drop-cont">
-                    <a><h4 id="lang">Languages</h4></a>
+                <div class="drop-content">
+                    <a id="lang">Languages</a>
                     <a><button onclick="fra()">French</button></a>
                     <a><button onclick="Spa()">Spanish</button></a>
                     <a><button onclick="Eng()">English</button></a>
                 </div>
             </div>
             
-            <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
-                <div id="myphoto" class="dropbtn" onclick="drop()" style="height: 100%"></div>
-                <div id="profile" class="drop-content">
+            <div class="dropdown" style="float: right">
+                <div id="myphoto" class="dropbtn" style="height: 100%"></div>
+                <div id="profile" class="drop-content" style="right: 0">
                     <a><div id="mydata"></div></a>
                     <a><button id="myBtn">Profile</button></a>
                     <a><button id="theme" onclick="mode()">Theme</button></a>
@@ -624,15 +749,12 @@
                 <form>
                     <label for="twit">Post:</label><br>
                     <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
-                    <div id="charNum" style="float: right; margin-right: 20px">200</div>
-                </form> 
-                <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL(); readURL(this)"/>
-                <br>
-                <button id="submit" type="button" onclick="tweet()" class="round" style="margin-bottom: 6px">Submit</button>
+                    <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL(); readURL(this)"/>
+                    <div id="charNum" style="float: right; margin-right: 28px">200</div>
+                </form>
+                <button id="submit" onclick="tweet()" class="round" style="margin-bottom: 6px">Submit</button>
                 <div id="imgTest" style="display:none"></div>
-                <br>
                 <button id=preview34 onclick="show()" style="margin-bottom: 5px">Preview</button>
-                <br>
                 <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%"/>
             </div>
 
@@ -642,7 +764,8 @@
                 <br>
                 <button id="username1" onclick="search('1')">Username</button>
                 <button id="content1" onclick="search('2')">Content</button>
-                <div id="mytweets">Loading...<div id="loader"></div></div>
+                <br>
+                <div id="mytweets"><br>Loading...<div id="loader"></div></div>
             </div>
         </div>
         
@@ -665,7 +788,7 @@
             </div>
 
         </div>
-   
+      
     </body>
 
 </html>
