@@ -13,6 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="http://code.jquery.com/jquery-1.5.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.0.js"></script>
 
     <script>
         // Initialize Firebase
@@ -25,7 +26,7 @@
             messagingSenderId: "795089365122"
         };
         firebase.initializeApp(config);
-           
+                
         // Check to see if you are logged in
         firebase.auth().onAuthStateChanged(function(user) {
             if (user == null) {
@@ -33,27 +34,41 @@
                 return;
             } else {
                 userId = user.uid;
-                name = user.displayName;
-                imageUrl = user.photoURL;
                 email = user.email;
-                    
-                // write user data to users
-                writeUserData(userId, name, email, imageUrl);
+                tag = user.displayName;
                 
-                // write data to document
-                mydiv = document.getElementById("mydata");
-                mydiv.innerHTML = name
-                mydiv = document.getElementById("myname");
-                mydiv.innerHTML = name
-                mydiv = document.getElementById("myemail");
-                mydiv.innerHTML = email
-                mydiv = document.getElementById("myuserid");
-                mydiv.innerHTML = userId
+                firebase.database().ref('/users/' + userId).once('value', function(snapshot) {
+                    get = snapshot.val();
+                    if (get === null) {
+                        firebase.database().ref('users/' + userId).set({
+                            email: email,
+                            profile_picture: user.photoURL,
+                            username: tag,
+                            bio: "",
+                        });
+                    }
+                    name = get.username;
+                    imageUrl = get.profile_picture;
+                    bio = get.bio;
+
+                    // write data to document
+                    mydiv = document.getElementById("mydata");
+                    mydiv.innerHTML = name
+                    mydiv = document.getElementById("myname");
+                    mydiv.innerHTML = name
+                    mydiv = document.getElementById("myemail");
+                    mydiv.innerHTML = email
+                    mydiv = document.getElementById("myuserid");
+                    mydiv.innerHTML = userId
+                    mydiv = document.getElementById("mybio");
+                    mydiv.innerHTML = bio;
+
+                    myphotodiv = document.getElementById("myphoto");
+                    myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; width: 42px; cursor: pointer'/>";
+                    myphotodiv = document.getElementById("myp");
+                    myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='width: 40%'/>";
+                });
                 
-                myphotodiv = document.getElementById("myphoto");
-                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 50%; width: 42px; cursor: pointer'/>";
-                myphotodiv = document.getElementById("myp");
-                myphotodiv.innerHTML = "<img src='" + imageUrl + "' style='border-radius: 100%; width: 100px; cursor: pointer'/>";
                 firebase.database().ref('/tweets').once('value').then(function(snapshot) {
                     var data = (snapshot.val());
                     if (data == null) {
@@ -93,20 +108,10 @@
             }
         } // end function
         
-        // write user data
-        function writeUserData(userId, name, email, imageUrl) {
-            firebase.database().ref('users/' + userId).set({
-                username: name,
-                email: email,
-                profile_picture : imageUrl
-            });
-        }
-        
         function updatetweets(data) {
-            //var mylist = "<ul>";
             var mytab = "<table id='myFeed'>";
+            sortTime();
             var i = 0;
-            mytab = mytab + "<tr id='tabHead'><td></td><th onclick='sortAlpha(1)'>Name</th><td></td><th onclick='sortTime(3)'>Time</th></tr>"
             users = data[1]; // put on top, because changed data - not good coding change later
             data = data[0];
             
@@ -116,36 +121,42 @@
                     var ago = new Date(data[u][t].time);
                     var date = timeSince(ago);
                     var time = date.toString();
+                    
+                    mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%'></td>";
+                    mytab = mytab + "<td>" + users[u].username + "</td>";
                     if (data[u][t].img != "") {
-                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%'></td>";
-                        mytab = mytab + "<td>" + users[u].username + "</td>";
-                        mytab = mytab + "<td id='unique" + i + "'>" + data[u][t].tweet + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
-                        mytab = mytab + "<td>" + time + "</td>";
-                        mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>";
-                        if (users[u].username === name) {
-                            mytab = mytab + "<td><button onclick='edit(" + i + ")' style='margin: 0'><i class='fa fa-wrench'></i></button><button onclick='delete()' style='margin: 0'><i class='fa fa-trash'></i></button></td>";
+                        if (data[u][t].tweet.includes("https://www.youtube.com")) {
+                            var yt = data[u][t].tweet.slice(data[u][t].tweet.indexOf("https://www.youtube.com", " "));
+                            var embYT = data[u][t].tweet.replace(yt, '<iframe width="400" height="300" src="//www.youtube.com/embed/' + getYT(yt) + '" frameborder="0" allowfullscreen></iframe>');
+                            mytab = mytab + "<td id='twt" + i + "'>" + embYT + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
                         } else {
-                            mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i>   </td>";
+                            mytab = mytab + "<td id='twt" + i + "'>" + data[u][t].tweet + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
                         }
                     } else {
-                        mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%; cursor: pointer'></td>";
-                        mytab = mytab + "<td>" + users[u].username + "</td>";
-                        mytab = mytab + "<td id='unique" + i + "'>" + data[u][t].tweet + "</td>";
-                        mytab = mytab + "<td>" + time + "</td>";
-                        if (users[u].username === name) {
-                            mytab = mytab + "<td><button onclick='edit(" + i + ")' style='margin: 0'><i class='fa fa-wrench'></i></button><button onclick='delete()' style='margin: 0; padding: 6px'><i class='fa fa-trash'></i></button></td>";
+                        if (data[u][t].tweet.includes("https://www.youtube.com")) {
+                            var yt = data[u][t].tweet.slice(data[u][t].tweet.indexOf("https://www.youtube.com", " "));
+                            var embYT = data[u][t].tweet.replace(yt, '<iframe width="400" height="300" src="//www.youtube.com/embed/' + getYT(yt) + '" frameborder="0" allowfullscreen></iframe>');
+                            mytab = mytab + "<td id='twt" + i + "'>" + embYT + "</td>";
                         } else {
-                            mytab = mytab + "<td style='padding-right: 15px'><i onclick='like(this)' style='cursor: pointer' class='fa fa-thumbs-up'></i></td>";
+                            mytab = mytab + "<td id='twt" + i + "'>" + data[u][t].tweet + "</td>";
+                        }
+                    }
+                    mytab = mytab + "<td id='ti" + i + "'>" + time + "</td>";
+                    if (users[u].username === tag) {
+                        mytab = mytab + "<td><button onclick='edit(" + i + ")' style='margin: 0'><i class='fa fa-wrench'></i></button><button onclick='Delete(" + i + ")' style='margin: 0; padding: 5px'><i class='fa fa-trash'></i></button><br>likes: <span id='counter" + i + "'>" + data[u][t].likes + "</span></td>";
+                    } else {
+                        if (data[u][t].likeId.includes(userId)) {
+                            mytab = mytab + "<td id='like" + i + "' class='blue' style='padding-right: 15px'><i onclick='like(" + i + ")' style='cursor: pointer' class='fa fa-thumbs-up'></i><span id='counter" + i + "'>" + data[u][t].likes + "</span></td>";
+                        } else {
+                            mytab = mytab + "<td id='like" + i + "' style='padding-right: 15px'><i onclick='like(" + i + ")' style='cursor: pointer'class='fa fa-thumbs-up'></i><span id='counter" + i + "'>" + data[u][t].likes + "</span></td>";
                         }
                     }
                     i++;
                     mytab = mytab + "</tr>";
-                }   
+                }
             }
-            //mylist = mylist + "</ul>";
             mytab = mytab + "</table>"
             var mytdiv = document.getElementById("mytweets");
-            //mytdiv.innerHTML = mylist;
             mytdiv.innerHTML = mytab;
         }
         
@@ -156,7 +167,7 @@
             var nameValue = twitdoc.value;
             var imgValue = twitimg.innerHTML;
             var js_time = Date.now();
-            var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue});
+            var tweetid = firebase.database().ref('tweets/' + userId + "/").push({tweet: nameValue, time: js_time, img: imgValue, likeId: "", likes: 0});
             twitdoc.value = "";
             console.log("tweet written")
             
@@ -180,7 +191,19 @@
             
         }
         
-        function signin() {
+        
+        function getYT(url) {
+            var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            var match = url.match(regExp);
+
+            if (match && match[2].length == 11) {
+                return match[2];
+            } else {
+                return 'error';
+            }
+        }
+        
+        function signingoogle() {
             console.log("Signing in");
             var provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithRedirect(provider).then(function(result) { 
@@ -188,8 +211,102 @@
             });
         }
         
-        function reload() {
-            window.location.reload()
+        function signinyahoo() {
+            console.log("Signing in");
+            var provider = new firebase.auth.OAuthProvider('yahoo.com');
+            firebase.auth().signInWithRedirect(provider);
+            firebase.auth().getRedirectResult()
+                .then(function(result) {
+                    
+                // User is signed in.
+                // IdP data available in result.additionalUserInfo.profile.
+                // Yahoo OAuth access token can be retrieved by calling:
+                // result.credential.accessToken
+                // Yahoo OAuth ID token can be retrieved by calling:
+                // result.credential.idToken
+                    
+                var user = result.additionalUserInfo.profile;
+                console.log(user);
+            })
+                .catch(function(error) {
+                // Handle error.
+            });
+                
+        }
+    
+        function signingithub() {
+            console.log("Signing in");
+            var provider= new firebase.auth.GithubAuthProvider();
+            firebase.auth().signInWithRedirect(provider);
+            provider.addScope('repo');
+            provider.setCustomParameters({
+                'allow_signup': 'true'
+            });
+            firebase.auth().getRedirectResult().then(function(result) {
+                if (result.credential) {
+                    var token = result.credential.accessToken;
+                    var user = result.user;
+                    // ...
+                }
+                // The signed-in user info.
+                var user = result.user;
+            }).catch(function(error) {
+                // Handle Errors here.
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                // The email of the user's account used.
+                var email = error.email;
+                // The firebase.auth.AuthCredential type that was used.
+                var credential = error.credential;
+                // ...
+                window.location.replace("uniteam/Socia-Media.html");
+            });
+        }    
+        
+        function userPosts(uid) {
+            firebase.database().ref('tweets/').once('value', function(snapshot) {
+                var mytab = "<table>";
+                snapshot.forEach(function(childSnapshot) {
+                    var i = 0;
+                    for (key in childSnapshot.val()) {
+                        var owner = childSnapshot.key;
+                        var key = childSnapshot.val()[key];
+                        if (owner === uid) {
+                            mytab = mytab + "<tr>";
+                            var ago = new Date(key.time);
+                            var date = timeSince(ago);
+                            var time = date.toString();
+                            
+                            mytab = mytab + "<td><img src='" + imageUrl + "'width='50px' style='border-radius: 50%'></td>";
+                            mytab = mytab + "<td>" + tag + "</td>";
+                            if (key.img != "") {
+                                if (key.tweet.includes("https://www.youtube.com")) {
+                                    var yt = key.tweet.slice(key.tweet.indexOf("https://www.youtube.com", " "));
+                                    var embYT = key.tweet.replace(yt, '<iframe width="400" height="300" src="//www.youtube.com/embed/' + getYT(yt) + '" frameborder="0" allowfullscreen></iframe>');
+                                    mytab = mytab + "<td id='twt" + i + "'>" + embYT + "<br><img src='" + key.img + "'width='300px'></td>";
+                                } else {
+                                    mytab = mytab + "<td id='twt" + i + "'>" + key.tweet + "<br><img src='" + key.img + "'width='300px'></td>";
+                                }
+                            } else {
+                                if (key.tweet.includes("https://www.youtube.com")) {
+                                    var yt = key.tweet.slice(key.tweet.indexOf("https://www.youtube.com", " "));
+                                    var embYT = key.tweet.replace(yt, '<iframe width="400" height="300" src="//www.youtube.com/embed/' + getYT(yt) + '" frameborder="0" allowfullscreen></iframe>');
+                                    mytab = mytab + "<td id='twt" + i + "'>" + embYT + "</td>";
+                                } else {
+                                    mytab = mytab + "<td id='twt" + i + "'>" + key.tweet + "</td>";
+                                }
+                            }
+                            mytab = mytab + "<td id='ti" + i + "'>" + time + "</td>";
+                            mytab = mytab + "<td><button onclick='edit(" + i + ")' style='margin: 0'><i class='fa fa-wrench'></i></button><button onclick='Delete(" + i + ")' style='margin: 0; padding: 6px'><i class='fa fa-trash'></i></button></td>";
+                            i++;
+                            mytab = mytab + "</tr>";
+                        }
+                    }
+                });
+                mytab = mytab + "</table>"
+                var myPosts = document.getElementById("myPosts");
+                myPosts.innerHTML = mytab;
+            });
         }
         
         function signout() {
@@ -198,70 +315,126 @@
             });
         }
         
-        window.onload = function() {
-        
-        var modal = document.getElementById('myModal');
-        // Get the button that opens the modal
-        var btn = document.getElementById("myBtn");
-        // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
-        // When the user clicks on the button, open the modal 
-        btn.onclick = function() {
-          modal.style.display = "block";
-        }
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-          modal.style.display = "none";
-        }
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-          if (event.target == modal) {
-            modal.style.display = "none";
-          }
-        }
-        }
-        
-        function like(x) {
-            x.classList.toggle("blue");
-        }
-        
-        function edit(i) {
-            var u = "unique" + i;
-            var editId = document.getElementById(u);
-            var keyId;
-            for (key of Object.keys(users)) {
-                if (users[key].tweet === editId.value) {
-                    keyId = key;
-                }
-            }
-            /*if (editId.contentEditable == true) {
-                editId.contentEditable = false;
-            } else {
-                editId.contentEditable = true;
-            }*/
-            editId.contentEditable = true;
-            editId.value = editId.innerHTML;
-            $("#unique" + i).keypress(function(event) {
-                if (event.which == 13) {
-                    //editId.innerHTML = editId.value;
-                    editId.contentEditable = false;
-                    firebase.database().ref(keyId).update({tweet: editId.value});
+        function refresh() {
+            firebase.database().ref('/tweets').once('value').then(function(snapshot) {
+                var data = (snapshot.val());
+                if (data == null) {
+                    console.log("No data found at /tweets/" + userId);  
+                } else { 
+                    firebase.database().ref('/users').once('value').then(function(snapshot) { 
+                        var userdata = (snapshot.val());
+                        if (userdata != null) {
+                            dataarray = [data,userdata]
+                            updatetweets(dataarray); 
+                        }
+                    });
                 }
             });
         }
         
-        /*function delete() {
+        function like(i) {
+            var counter = document.getElementById("counter" + i);
+            var like = document.getElementById("like" + i);
+            like.classList.toggle("blue");
+            var twt = document.getElementById("twt" + i);
+            var ti = document.getElementById("ti" + i);
+            firebase.database().ref('/tweets/').once('value', function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    for (key in childSnapshot.val()) {
+                        if ((childSnapshot.val()[key].tweet + "<br><img src='" + childSnapshot.val()[key].img + "'width='300px'>" === twt.innerHTML || childSnapshot.val()[key].tweet === twt.innerHTML) && timeSince(childSnapshot.val()[key].time).toString() === ti.innerHTML) {
+                            var owner = childSnapshot.key;
+                            likes = childSnapshot.val()[key].likes;
+                            likeId = childSnapshot.val()[key].likeId;
+                            if (likeId.includes(userId)) {
+                                likeId = childSnapshot.val()[key].likeId.replace(userId + " ", "");
+                                likes--;
+                                firebase.database().ref("tweets/" + owner + "/" + [key] + "/").update({likeId: likeId, likes: likes});
+                                counter.innerHTML = likes;
+                                break;
+                            } else {
+                                likeId = childSnapshot.val()[key].likeId + userId + " ";
+                                likes++;
+                                firebase.database().ref("tweets/" + owner + "/" + [key] + "/").update({likeId: likeId, likes: likes});
+                                counter.innerHTML = likes;
+                                break;
+                            }
+                        }
+                    }
+                });
+            });
+        }
+        
+        function update() {
+            var username = document.getElementById("myname");
+            username.contentEditable = true;
+            username.value = username.innerHTML;
+            $("#myname").keypress(function(event) {
+                if (event.which == 13) {
+                    username.contentEditable = false;
+                    firebase.database().ref("users/" + userId + "/").update({username: username.innerHTML});
+                }
+            });
+            var bio = document.getElementById("mybio");
+            bio.contentEditable = true;
+            bio.value = bio.innerHTML;
+            $("#mybio").keypress(function(event) {
+                if (event.which == 13) {
+                    bio.contentEditable = false;
+                    firebase.database().ref("users/" + userId + "/").update({bio: bio.innerHTML});
+                }
+            });
+        }
             
+        function edit(i) {
+            var twt = document.getElementById("twt" + i);
+            var ti = document.getElementById("ti" + i);
+            firebase.database().ref('/tweets/' + userId).once('value', function(snapshot) {
+                for (key in snapshot.val()) {
+                    if ((snapshot.val()[key].tweet + '<br><img src="' + snapshot.val()[key].img + '" width="300px">' === twt.innerHTML || snapshot.val()[key].tweet === twt.innerHTML) && timeSince(snapshot.val()[key].time).toString() === ti.innerHTML) {
+                        twt.style.backgroundColor = "rgb(10, 10, 10)";
+                        $("#twt" + i).keypress(function(event) {
+                            if (event.which == 13) {
+                                twt.contentEditable = false;
+                                firebase.database().ref("tweets/" + userId + "/" + key + "/").update({tweet: twt.innerHTML, time: Date.now(), edited: true});
+                                twt.style.backgroundColor = "rgb(0, 0, 0)";
+                            }
+                        });
+                        twt.contentEditable = true;
+                        twt.value = twt.innerHTML;
+                        break;
+                    }
+                }
+            });
+        }
+            
+        function Delete(i) {
+            var twt = document.getElementById("twt" + i);
+            var ti = document.getElementById("ti" + i);
+            firebase.database().ref('/tweets/' + userId).once('value', function(snapshot) {
+                for (key in snapshot.val()) {
+                    if ((snapshot.val()[key].tweet + '<br><img src="' + snapshot.val()[key].img + '" width="300px">' === twt.innerHTML || snapshot.val()[key].tweet === twt.innerHTML) && timeSince(snapshot.val()[key].time).toString() === ti.innerHTML) {
+                        firebase.database().ref("tweets/" + userId + "/" + key + "/").remove();
+                        break;
+                    }
+                }
+            });
+            $("#mytweets").load(document.URL + " #mytweets");
+            refresh();
+        }
+        
+        /*function mode() {
+            document.getElementById("body").classList.toggle("night");
         }*/
         
-        function mode() {
+        function changeback(){
+        document.getElementById("body").classList.toggle("night");
+            document.getElementById("body").style.backgroundImage = "url(bckground.jpg)";
+            document.getElementById("body").style.backgroundColor = "white";
+        }
+        function newimg(){
             document.getElementById("body").classList.toggle("night");
-            var modal = document.getElementById("bkgrnd");
-            if (modal.style.backgroundColor === "black") {
-                modal.style.backgroundColor = "white";
-            } else {
-                modal.style.backgroundColor = "black";
-            }
+            document.getElementById("body").style.backgroundImage = "url(forest.jpg)";
+            document.getElementById("body").style.backgroundColor = "black";
         }
         
         function countChar(val) {
@@ -329,56 +502,41 @@
                 }
             }
         }
-        function sortTime(n) {
+            
+        function sortTime() {
             var table, rows, switching, i, x, y, shouldSwitch;
-            table = document.getElementById("myFeed");
-            switching = true;
-            while (switching) {
-                switching = false;
-                rows = table.rows;
-                for (i = 1; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("td")[n].innerHTML;
-                    var xvalue = (Number(x.slice(0, 2)));
-                    y = rows[i + 1].getElementsByTagName("td")[n].innerHTML;
-                    var yvalue = (Number(y.slice(0, 2)));
-                    
-                    if (x.includes("minute")) {
-                        xvalue = xvalue * 60;
-                    } else if (x.includes("hour")) {
-                        xvalue = xvalue * 60 * 60;
-                    } else if (x.includes("day")) {
-                        xvalue = xvalue * 60 * 60 * 24;
-                    } else if (x.includes("month")) {
-                        xvalue = xvalue * 60 * 60 * 24 * 30;
-                    } else if (x.includes("year")) {
-                        xvalue = xvalue * 60 * 60 * 24 * 30 * 12;
+            var times = [];
+            firebase.database().ref('tweets/').once('value', function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    for (key in childSnapshot.val()) {
+                        times.push(childSnapshot.val()[key].time);
                     }
-                    if (y.includes("minute")) {
-                        yvalue = yvalue * 60;
-                    } else if (y.includes("hour")) {
-                        yvalue = yvalue * 60 * 60;
-                    } else if (y.includes("day")) {
-                        yvalue = yvalue * 60 * 60 * 24;
-                    } else if (y.includes("month")) {
-                        yvalue = yvalue * 60 * 60 * 24 * 30;
-                    } else if (y.includes("year")) {
-                        yvalue = yvalue * 60 * 60 * 24 * 30 * 12;
-                    } 
-                    
-                    if (xvalue > yvalue) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    table = document.getElementById("myFeed");
                     switching = true;
-                }
-            }
+                    while (switching) {
+                        switching = false;
+                        rows = table.rows;
+                        shouldSwitch = false;
+                        for (i = 0; i < times.length; i++) {
+                            if (times[i + 1] > times[i]) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                        if (shouldSwitch) {
+                            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                            Array.prototype.move = function (from, to) {
+                                this.splice(to, 0, this.splice(from, 1)[0]);
+                            };
+                            times.move(i + 1, i);
+                            switching = true;
+                        }
+                    }
+                });
+            });
         }
         
-        var timeSince = function(date) {
+        function timeSince(date) {
             if (typeof date !== 'object') {
                 date = new Date(date);
             }
@@ -434,7 +592,7 @@
             }
         }
 
-        $("#inputFileToLoad").change(function() {
+        $("#inputFileToLoad, #pfp").change(function() {
             readURL(this);
         });
         
@@ -503,17 +661,6 @@
             var p = document.getElementById("content1");
             p.innerHTML = "Contenido";
         }
-        
-        var myVar;
-
-        function myFunction() {
-            myVar = setTimeout(showPage, 3000);
-        }
-
-        function showPage() {
-            document.getElementById("loader").style.display = "none";
-            document.getElementById("myDiv").style.display = "block";
-        }
 
         function openPage(pageName, elmnt, color) {
             // Hide all elements with class="tabcontent" by default */
@@ -536,20 +683,20 @@
             elmnt.style.backgroundColor = color;
         }
         
-        // Get the element with id="defaultOpen" and click on it
-        //document.getElementById("defaultOpen").click();
+        function changesrc(e){
+            var audio = document.getElementById("audio");
+            var o = document.getElementById("musicsource");
+            o.src = e;
+            audio.load();
+            audio.play();   
+        }
         
     </script>
     
     <style>
-        th, td {
+        
+        td {
             padding: 3px;
-        }
-        th {
-            cursor: pointer;
-            font-size: 18px;
-            top: 0;
-            z-index: 1;
         }
         
         h1 {
@@ -592,13 +739,9 @@
             height: 80vh;
         }
         
-        ul li {
-            display: block;
-            margin: 3px;
-            padding: 3px;
-            border-width: 1px;
-            border-style: solid;
-            border-color: teal;
+        #myPosts {
+            overflow-y: scroll;
+            height: 80vh;
         }
         
         textarea {
@@ -612,6 +755,15 @@
         .column {
             float: left;
             width: 50%;
+        }
+        
+        .column1 {
+            float: left;
+            width: 40%
+        }
+        .column2 {
+            float: left;
+            width: 60%
         }
 
         .row {
@@ -710,7 +862,7 @@
         #loader {
               position: absolute;
               top: 40%;
-              left: 74%;
+              left: 70%;
               z-index: 1;
               width: 80px;
               height: 80px;
@@ -769,48 +921,79 @@
                 padding: 8px;
                 padding-top: 0;
             }
-            .column {
+            .column, .column1, .column2 {
                 float: none;
                 width: 100%;
+                overflow: auto;
+            }
+            #mytweets {
+                height: 50vh;
             }
             #loader {
-                top: 60%;
-                left: 54%;
+                top: 70%;
+                left: 53%;
             }
+        }
+        
+        #playlist {
+            border: none;
+            list-style: none;
+        }
+        #playlist li a {
+            color: aliceblue;
+            text-decoration: none;
+        }
+        #playlist .current-song a {
+            color: blue;
         }
         
     </style>
 
-    <body style="margin: 0; overflow: hidden" id="body" class="night">
-        <div id="Home" class="tabcontent">
-            <h1>
-                <img src="title.jpg">
-                <button id="signin" onclick="signin()" style="float: left">Sign in</button>
-                <div class="dropdown">
-                    <button id="lang" style="">Languages</button>
-                    <div class="drop-content">
-                        <a>Languages</a>
-                        <a><button onclick="Fr()">French</button></a>
-                        <a><button onclick="Sp()">Spanish</button></a>
-                        <a><button onclick="Eng()">English</button></a>
-                    </div>
+    <body style="margin: 0; overflow: hidden" class="night" id="body">
+         <h1>
+            <img src="title.jpg">
+            <div class="dropdown" style="float: left; height: 36px">
+                <button>Sign In</button>
+                <div class="drop-content">
+                    <a>Sign In</a>
+                    <a><button onclick="signingoogle()">Google</button></a>
+                    <a><button onclick="signinyahoo()">Yahoo</button></a>
+                    <a><button onclick="signingithub()">Github</button></a>
                 </div>
-
+            </div>
+            <div class="dropdown">
+                <button id="lang" style="">Languages</button>
+                <div class="drop-content">
+                    <a>Languages</a>
+                    <a><button onclick="Fr()">French</button></a>
+                    <a><button onclick="Sp()">Spanish</button></a>
+                    <a><button onclick="Eng()">English</button></a>
+                </div>
+            </div>
                 <div class="dropdown" style="float: right">
-                    <div id="myphoto" style="height: 100%"></div>
-                    <div id="profile" class="drop-content" style="right: 0">
-                        <a><div id="mydata"></div></a>
-                        <a><button id="myBtn">Profile</button></a>
-                        <a><button id="theme" onclick="mode()">Theme</button></a>
-                        <a><button id="signout" onclick="signout()">Sign out</button></a>
-                    </div>
+                <div id="myphoto" style="height: 100%"></div>
+                <div id="profile" class="drop-content" style="right: 0">
+                    <a><div id="mydata"></div></a>
+                    <a><button id="theme" onclick="mode()">Theme</button></a>
+                    <a><button id="signout" onclick="signout()">Sign out</button></a>
                 </div>
-                <button id="ProfilePage" class="tablink" onclick="openPage('Profile', this, 'red')" style="float: right">Profile</button>
-                <button  id="HomePage" class="tablink" onclick="openPage('Home', this, 'blue')" style="float: left">Home</button>
-            </h1>
+            </div>
+            <button id="ProfilePage" class="tablink" onclick="openPage('Profile', this, 'red'); userPosts(userId)" style="float: right">Profile</button>
+            <button id="HomePage" class="tablink" onclick="openPage('Home', this, 'blue')" style="float: left">Home</button>
+            <button id="Audio" class="tablink" onclick="openPage('Music', this, 'black')" style="float: right">Music</button>
+            <div class="dropdown" style="float: right; height: 36px">
+                <button>Themes</button>
+                <div class="drop-content">
+                    <a>Themes</a>
+                    <a><button id="theme" onclick="changeback()">Lighting</button></a>
+                    <a><button id="theme" onclick="newimg()">Forest</button></a>
+                </div>
+             </div>
+        </h1>
 
+        <div id="Home" class="tabcontent">
             <div class="row">
-                <div id="post" class="column">
+                <div id="post" class="column1">
                     <form>
                         <label for="twit">Post:</label><br>
                         <textarea id="twit" type="text" name="thetweet" cols="100" rows="4" maxlength="200" onkeyup="countChar(this)" placeholder="Write your post here..."></textarea>
@@ -821,9 +1004,13 @@
                     <div id="imgTest" style="display:none"></div>
                     <button onclick="show()" style="margin-bottom: 5px">Preview</button>
                     <img id="preview" src="#" alt="uploaded image" style="display: none; width: 95%"/>
+                    <div class="audio">
+                        <audio controls id="audio" onended="contplay()" autoplay/>
+                        <source id="musicsource" src="comegetyourlove.mp3"/>
+                    </div>
                 </div>
 
-                <div class="column">
+                <div class="column2">
                     <br>
                     <input type="text" id="search" onkeyup="search()" placeholder="Search for a post..." title="Type in a keyword">
                     <br>
@@ -834,66 +1021,45 @@
                 </div>
             </div>
         </div>
-    </body>
     
-    <body style="margin: 0; overflow: hidden" id="body" class="night">
         <div id="Profile" class="tabcontent">
-            <h1 style="font-size: 36px">
-                <img src="title.jpg">
-                <button id="signin" onclick="signin()" style="float: left">Sign in</button>
-                <div class="dropdown" style="float: left; height: 36px; margin-right: 5px">
-                    <button id="lang">Languages</button>
-                    <div class="drop-content">
-                        <a><h4 id="lang">Languages</h4></a>
-                        <a><button onclick="fra()">French</button></a>
-                        <a><button onclick="Spa()">Spanish</button></a>
-                        <a><button onclick="Eng()">English</button></a>
-                    </div>
-                </div>
-                <div class="dropdown" style="float: right; height: 36px; margin-right: 5px">
-                    <div id="myphoto" style="height: 100%"></div>
-                    <div id="profile" class="drop-content">
-                        <a><div id="mydata"></div></a>
-                        <a><button id="myBtn">Profile</button></a>
-                        <a><button id="theme" onclick="mode()">Theme</button></a>
-                        <a><button id="signout" onclick="signout()">Sign out</button></a>
-                        </div>
-                </div>
-                <button id="ProfilePage" class="tablink" onclick="openPage('Profile', this, 'red')" style="float: right">Profile</button>
-                <button id="HomePage" class="tablink" onclick="openPage('Home', this, 'blue')" style="float: left">Home</button>
-            </h1>
-            <h3 align="middle">Profile</h3>
-            <div id="myp" align="middle"></div>
-            <p align="middle">Name: </p>
-            <div id="myname" align="middle"></div>
-            <br>
-            <p align="middle">Email: </p>
-            <div id="myemail" align="middle"></div>
-            <br>
-            <p align="middle">UserID: </p>
-            <div id="myuserid" align="middle"></div>
-        </div>
-        
-        <div id="myModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span class="close">&times;</span>
-                    <a><h2><div id="myname"></div></h2></a>
-                </div>
-                <div class="modal-body" id="bkgrnd" style="background-color: black">
+            <div class="row">
+                <div class="column">
+                    <h2>Profile</h2>
+                    <div id="myp"></div>
+                    <h3>Name: <button onclick='update()' style='margin: 0'><i class='fa fa-wrench'></i></button></h3>
+                    <div id="myname"></div>
+                    <br>
+                    <p>Bio: <button onclick='update()' style='margin: 0'><i class='fa fa-wrench'></i></button></p>
+                    <div id="mybio"></div>
+                    <br>
                     <p>Email: </p>
                     <div id="myemail"></div>
                     <br>
                     <p>UserID: </p>
                     <div id="myuserid"></div>
+                    <br>
                 </div>
-                <div class="modal-footer">
-                    <h3>Copyright Uniteam 2019</h3>
+                <div class="column">
+                    <h2>My Posts</h2>
+                    <br>
+                    <div id="myPosts" align="middle"></div>
                 </div>
             </div>
-
         </div>
-   
+        
+        <div id="Music" class="tabcontent">
+            <ul id="playlist" align="middle">
+                <h2>My Playlist</h2>
+                <br>
+                <li><button id="1" onclick="changesrc('comegetyourlove.mp3')" src="comegetyourlove.mp3">Come Get Your Love</button></li>
+                <li><button id="2" onclick="changesrc('jackiechan.mp3')" src="jackiechan.mp3">Jackie Chan</button></li>
+                <li><button id="3" onclick="changesrc('sunflower.mp3')" src="sunflower.mp3">Sunflower</button></li>
+                <li><button id="4" onclick="changesrc('yosemite.mp3')" src="yosemite.mp3">Yosemite</button></li>
+                <li><button id="5" onclick="changesrc('concalma.mp3')" src="concalma.mp3">Con Calma</button></li>
+                <li><button id="6" onclick="changesrc('psycho.mp3')" src="psycho.mp3">Psycho</button></li>
+            </ul>
+        </div>
     </body>
-
+    
 </html>
