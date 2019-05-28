@@ -12,7 +12,6 @@
 
     <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <script src="http://code.jquery.com/jquery-1.5.js"></script>
     <script src="https://code.jquery.com/jquery-2.2.0.js"></script>
 
     <script>
@@ -26,7 +25,7 @@
             messagingSenderId: "795089365122"
         };
         firebase.initializeApp(config);
-                
+        
         // Check to see if you are logged in
         firebase.auth().onAuthStateChanged(function(user) {
             if (user == null) {
@@ -125,13 +124,7 @@
                     mytab = mytab + "<td><img src='" + users[u].profile_picture + "'width='50px' style='border-radius: 50%'></td>";
                     mytab = mytab + "<td>" + users[u].username + "</td>";
                     if (data[u][t].img != "") {
-                        if (data[u][t].tweet.includes("https://www.youtube.com")) {
-                            var yt = data[u][t].tweet.slice(data[u][t].tweet.indexOf("https://www.youtube.com", " "));
-                            var embYT = data[u][t].tweet.replace(yt, '<iframe width="400" height="300" src="//www.youtube.com/embed/' + getYT(yt) + '" frameborder="0" allowfullscreen></iframe>');
-                            mytab = mytab + "<td id='twt" + i + "'>" + embYT + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
-                        } else {
-                            mytab = mytab + "<td id='twt" + i + "'>" + data[u][t].tweet + "<br><img src='" + data[u][t].img + "'width='300px'></td>";
-                        }
+                        mytab = mytab + "<td id='twt" + i + "'>" + data[u][t].tweet + " <br><img src='" + data[u][t].img + "'width='300px'></td>";
                     } else {
                         if (data[u][t].tweet.includes("https://www.youtube.com")) {
                             var yt = data[u][t].tweet.slice(data[u][t].tweet.indexOf("https://www.youtube.com", " "));
@@ -190,7 +183,6 @@
             // The unique key stored in tweetid is based on a timestamp, so list items will automatically be ordered chronologically. Because Firebase generates a unique key for each tweet, no write conflicts will occur if multiple users add a post at the same time. https://firebase.google.com/docs/database/admin/save-data
             
         }
-        
         
         function getYT(url) {
             var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -280,13 +272,7 @@
                             mytab = mytab + "<td><img src='" + imageUrl + "'width='50px' style='border-radius: 50%'></td>";
                             mytab = mytab + "<td>" + tag + "</td>";
                             if (key.img != "") {
-                                if (key.tweet.includes("https://www.youtube.com")) {
-                                    var yt = key.tweet.slice(key.tweet.indexOf("https://www.youtube.com", " "));
-                                    var embYT = key.tweet.replace(yt, '<iframe width="400" height="300" src="//www.youtube.com/embed/' + getYT(yt) + '" frameborder="0" allowfullscreen></iframe>');
-                                    mytab = mytab + "<td id='twt" + i + "'>" + embYT + "<br><img src='" + key.img + "'width='300px'></td>";
-                                } else {
-                                    mytab = mytab + "<td id='twt" + i + "'>" + key.tweet + "<br><img src='" + key.img + "'width='300px'></td>";
-                                }
+                                mytab = mytab + "<td id='twt" + i + "'>" + key.tweet + "<br><img src='" + key.img + "'width='300px'></td>";
                             } else {
                                 if (key.tweet.includes("https://www.youtube.com")) {
                                     var yt = key.tweet.slice(key.tweet.indexOf("https://www.youtube.com", " "));
@@ -341,7 +327,9 @@
             firebase.database().ref('/tweets/').once('value', function(snapshot) {
                 snapshot.forEach(function(childSnapshot) {
                     for (key in childSnapshot.val()) {
-                        if ((childSnapshot.val()[key].tweet + "<br><img src='" + childSnapshot.val()[key].img + "'width='300px'>" === twt.innerHTML || childSnapshot.val()[key].tweet === twt.innerHTML) && timeSince(childSnapshot.val()[key].time).toString() === ti.innerHTML) {
+                        var yt = childSnapshot.val()[key].tweet.slice(childSnapshot.val()[key].tweet.indexOf("https://www.youtube.com", " "));
+                        var embYT = childSnapshot.val()[key].tweet.replace(yt, 'https://www.youtube.com/watch?reload=9&amp;v=' + getYT(yt));
+                        if ((childSnapshot.val()[key].tweet + " <br><img src='" + childSnapshot.val()[key].img + "'width='300px'>" === twt.innerHTML || childSnapshot.val()[key].tweet === twt.innerHTML || embYT + ' <br><img src="' + childSnapshot.val()[key].img + '" width="300px">' === twt.innerHTML) && timeSince(childSnapshot.val()[key].time).toString() === ti.innerHTML) {
                             var owner = childSnapshot.key;
                             likes = childSnapshot.val()[key].likes;
                             likeId = childSnapshot.val()[key].likeId;
@@ -367,20 +355,24 @@
         function update() {
             var username = document.getElementById("myname");
             username.contentEditable = true;
+            twt.style.backgroundColor = "rgb(10, 10, 10)";
             username.value = username.innerHTML;
             $("#myname").keypress(function(event) {
                 if (event.which == 13) {
                     username.contentEditable = false;
                     firebase.database().ref("users/" + userId + "/").update({username: username.innerHTML});
+                    twt.style.backgroundColor = "rgb(0, 0, 0)";
                 }
             });
             var bio = document.getElementById("mybio");
             bio.contentEditable = true;
+            twt.style.backgroundColor = "rgb(10, 10, 10)";
             bio.value = bio.innerHTML;
             $("#mybio").keypress(function(event) {
                 if (event.which == 13) {
                     bio.contentEditable = false;
                     firebase.database().ref("users/" + userId + "/").update({bio: bio.innerHTML});
+                    twt.style.backgroundColor = "rgb(0, 0, 0)";
                 }
             });
         }
@@ -390,7 +382,9 @@
             var ti = document.getElementById("ti" + i);
             firebase.database().ref('/tweets/' + userId).once('value', function(snapshot) {
                 for (key in snapshot.val()) {
-                    if ((snapshot.val()[key].tweet + '<br><img src="' + snapshot.val()[key].img + '" width="300px">' === twt.innerHTML || snapshot.val()[key].tweet === twt.innerHTML) && timeSince(snapshot.val()[key].time).toString() === ti.innerHTML) {
+                    var yt = snapshot.val()[key].tweet.slice(snapshot.val()[key].tweet.indexOf("https://www.youtube.com", " "));
+                    var embYT = snapshot.val()[key].tweet.replace(yt, '<iframe width="400" height="300" src="//www.youtube.com/embed/' + getYT(yt) + '" frameborder="0" allowfullscreen=""></iframe>');
+                    if ((snapshot.val()[key].tweet + ' <br><img src="' + snapshot.val()[key].img + '" width="300px">' === twt.innerHTML || snapshot.val()[key].tweet === twt.innerHTML || embYT + ' <br><img src="' + snapshot.val()[key].img + '" width="300px">') && timeSince(snapshot.val()[key].time).toString() === ti.innerHTML) {
                         twt.style.backgroundColor = "rgb(10, 10, 10)";
                         $("#twt" + i).keypress(function(event) {
                             if (event.which == 13) {
@@ -412,7 +406,9 @@
             var ti = document.getElementById("ti" + i);
             firebase.database().ref('/tweets/' + userId).once('value', function(snapshot) {
                 for (key in snapshot.val()) {
-                    if ((snapshot.val()[key].tweet + '<br><img src="' + snapshot.val()[key].img + '" width="300px">' === twt.innerHTML || snapshot.val()[key].tweet === twt.innerHTML) && timeSince(snapshot.val()[key].time).toString() === ti.innerHTML) {
+                    var yt = snapshot.val()[key].tweet.slice(snapshot.val()[key].tweet.indexOf("https://www.youtube.com", " "));
+                    var embYT = snapshot.val()[key].tweet.replace(yt, '<iframe width="400" height="300" src="//www.youtube.com/embed/' + getYT(yt) + '" frameborder="0" allowfullscreen=""></iframe>');
+                    if ((snapshot.val()[key].tweet + ' <br><img src="' + snapshot.val()[key].img + '" width="300px">' === twt.innerHTML || snapshot.val()[key].tweet === twt.innerHTML || embYT + ' <br><img src="' + snapshot.val()[key].img + '" width="300px">') && timeSince(snapshot.val()[key].time).toString() === ti.innerHTML) {
                         firebase.database().ref("tweets/" + userId + "/" + key + "/").remove();
                         break;
                     }
@@ -421,10 +417,6 @@
             $("#mytweets").load(document.URL + " #mytweets");
             refresh();
         }
-        
-        /*function mode() {
-            document.getElementById("body").classList.toggle("night");
-        }*/
         
         function changeback(){
         document.getElementById("body").classList.toggle("night");
@@ -974,7 +966,6 @@
                 <div id="myphoto" style="height: 100%"></div>
                 <div id="profile" class="drop-content" style="right: 0">
                     <a><div id="mydata"></div></a>
-                    <a><button id="theme" onclick="mode()">Theme</button></a>
                     <a><button id="signout" onclick="signout()">Sign out</button></a>
                 </div>
             </div>
